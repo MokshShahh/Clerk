@@ -16,7 +16,7 @@ Doctors dedicate excessive time to administrative tasks like **manual prescripti
 
 * **Clinical Decision Support:** Integrates with the **PrimeKG API** (a Harvard project knowledge graph) to provide relevant drug interaction and clinical context to aid the doctor's prescription decisions.
 
-* **Oral Command & Drafting:** Generates $\text{H\&P}$ notes, examination findings, and initial prescription drafts from voice input.
+* **Oral Command & Drafting:** Generates notes, examination findings, and initial prescription drafts from voice input.
 
 * **Instant Record Access:** Rapidly retrieves complete patient history and records via voice command.
 
