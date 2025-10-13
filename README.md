@@ -34,4 +34,4 @@ Doctors dedicate excessive time to administrative tasks like **manual prescripti
 
 * **Speech-to-Text:** (High-accuracy $\text{STT}$ Service) to ensure reliable conversion of medical terminology and local languages.
 
-## ONGOING
+## THIS PROJECT IS ONGOING
