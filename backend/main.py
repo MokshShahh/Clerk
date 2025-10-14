@@ -22,8 +22,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=[""],
+    allow_headers=[""],
 )
 
 async def process_audio_file(audio_data: bytes):    
@@ -45,11 +45,44 @@ async def process_audio_file(audio_data: bytes):
         transcript = "Error during transcription. Please check API key and network."
 
     draft_notes = f"Chief Complaint: {transcript[:min(len(transcript), 40)]}...\nDiagnosis: Pending.\nPrescription Draft: Amlodipine (PrimeKG check required)."
-    
+    print(draft_notes)
     return {
         "transcript": transcript,
-        "draft_notes": draft_notes
+        "draft_note": """
+                    <article class="bg-slate-800 text-gray-100 rounded-xl shadow-2xl max-w-3xl mx-auto">
+
+<section aria-labelledby="subjective-heading" class="pb-6 border-b border-gray-700">
+<h2 id="subjective-heading" class="text-2xl font-bold text-teal-400 mb-4 tracking-wide">Subjective (S)</h2>
+<div class="text-base text-gray-200 pl-5 border-l-4 border-teal-500">
+<p>Patient presents with chief complaints of new-onset headaches, nausea, cold-like symptoms, generalized tiredness, and significant myalgia (muscle aches) over the past 48 hours. Denies fever or shortness of breath.</p>
+</div>
+</section>
+
+
+<section aria-labelledby="assessment-heading" class="pb-6 border-b border-gray-700">
+<h2 id="assessment-heading" class="text-2xl font-bold text-teal-400 mb-4 tracking-wide">Assessment (A)</h2>
+<div class="text-base text-gray-200 pl-5 border-l-4 border-teal-500">
+<p>Based on reported symptoms (Headache, Nausea, Fatigue), the clinical presentation is highly consistent with an acute Viral Syndrome or Common Cold. Symptoms are self-limiting but warrant supportive care.</p>
+</div>
+</section>
+
+
+<section aria-labelledby="plan-heading">
+<h2 id="plan-heading" class="text-2xl font-bold text-teal-400 mb-4 tracking-wide">Plan (P)</h2>
+<div class="text-base text-gray-200 pl-5 border-l-4 border-teal-500">
+<p>Supportive care advised. Patient should monitor temperature and return if symptoms worsen, respiratory distress develops, or fever persists beyond 72 hours. Education provided on hydration and rest.</p>
+</div>
+</section>
+
+</article>
+                        """,
+        "drug_recommendation": {
+            "drug_name": "Acetaminophen (Paracetamol)",
+            "dose_and_frequency": "500 mg, every 4-6 hours as needed.",
+            "reasoning": "The patient's primary complaints are mild to moderate myalgia (muscle pain) and headache, which are non-specific pain symptoms of the likely Viral Syndrome. Acetaminophen is recommended as a first-line, over-the-counter analgesic and antipyretic to manage these symptoms and reduce any potential low-grade fever, while having a good safety profile for short-term use."
+            }
     }
+
 
 @app.post("/api/transcribe")
 async def transcribe_audio(audio_file: UploadFile = File(...)):
