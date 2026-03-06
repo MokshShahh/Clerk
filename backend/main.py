@@ -13,6 +13,10 @@ aai.settings.api_key = os.environ.get("ASSEMBLY_AI_API_KEY")
 
 app = FastAPI()
 
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
 origins = [
     "http://localhost:3000", 
     "http://127.0.0.1:3000",
