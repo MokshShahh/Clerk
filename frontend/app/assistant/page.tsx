@@ -120,7 +120,7 @@ async function uploadAudio(audioFile: Blob){
     formData.append('audio_file', audioFile, 'consultation_audio.webm');
 
     try {
-        const response = await fetch('http://0.0.0.0:8000/api/transcribe', {
+        const response = await fetch('http://localhost:8000/api/transcribe', {
             method: 'POST',
             body: formData,
         });
