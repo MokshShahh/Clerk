@@ -2,6 +2,7 @@
 import React, { useState, FC, MouseEvent } from "react";
 import Link from "next/link"; 
 import { Button } from '@/components/ui/button';
+import Logo from './Logo';
 
 
 interface NavigationLinkProps {
@@ -52,9 +53,9 @@ const Navbar: FC = () => {
         "
       >
         <div className="flex items-center gap-6 h-full opacity-100">
-          <div className="w-6 h-6 flex items-center justify-center text-[#94938D] flex-shrink-0 m-2">
-            LOGO
-          </div>
+          <Link href="/" className="flex items-center flex-shrink-0" aria-label="Clerk AI Home">
+            <Logo iconSize={20}/>
+          </Link>
 
           {navItems.map((item) => (
             <div
@@ -79,19 +80,9 @@ const Navbar: FC = () => {
       </div>
 
       <div className="lg:hidden flex items-center justify-between w-full px-4">
-        <div className="w-6 h-6 flex items-center justify-center text-[#94938D]">
-          <svg viewBox="0 0 100 50">
-            <path
-              fill="none"
-              stroke="red"
-              strokeWidth="6"
-              transform="scale(1.1)"
-              d="M10,25 C20,0 40,0 50,25 C60,50 80,50 90,25
-                 C80,0 60,0 50,25
-                 C40,50 20,50 10,25 Z"
-            />
-          </svg>
-        </div>
+        <Link href="/" className="flex items-center" aria-label="Clerk AI Home">
+          <Logo iconSize={20}/>
+        </Link>
 
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
