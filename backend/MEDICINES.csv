@@ -1,0 +1,205 @@
+Medicine,Treats
+Paracetamol,Fever
+Ibuprofen,Pain
+Aspirin,Inflammation
+Amoxicillin,Bacterial infection
+Ciprofloxacin,Urinary tract infection
+Azithromycin,Respiratory infection
+Metformin,Type 2 diabetes
+Insulin,Diabetes
+Losartan,Hypertension
+Amlodipine,High blood pressure
+Lisinopril,Hypertension
+Omeprazole,Acid reflux
+Pantoprazole,GERD
+Ranitidine,Stomach ulcers
+Cetirizine,Allergy
+Loratadine,Seasonal allergy
+Diphenhydramine,Allergic reaction
+Dextromethorphan,Cough
+Guaifenesin,Chest congestion
+Salbutamol,Asthma
+Budesonide,Asthma
+Fluticasone,Allergic rhinitis
+Prednisolone,Inflammation
+Hydrocortisone,Skin allergy
+Clobetasol,Eczema
+Betamethasone,Psoriasis
+Acetaminophen,Pain
+Diclofenac,Arthritis
+Naproxen,Menstrual pain
+Clindamycin,Skin infection
+Doxycycline,Acne
+Tetracycline,Pneumonia
+Metronidazole,Parasitic infection
+Fluconazole,Fungal infection
+Ketoconazole,Dandruff
+Miconazole,Yeast infection
+Clotrimazole,Ringworm
+Atorvastatin,High cholesterol
+Rosuvastatin,Hyperlipidemia
+Simvastatin,High cholesterol
+Furosemide,Edema
+Hydrochlorothiazide,Hypertension
+Spironolactone,Heart failure
+Warfarin,Blood clot prevention
+Heparin,Deep vein thrombosis
+Clopidogrel,Stroke prevention
+Aspirin (low dose),Heart attack prevention
+Diazepam,Anxiety
+Lorazepam,Insomnia
+Alprazolam,Panic disorder
+Sertraline,Depression
+Fluoxetine,OCD
+Escitalopram,Anxiety disorder
+Amitriptyline,Chronic pain
+Duloxetine,Nerve pain
+Pregabalin,Epilepsy
+Gabapentin,Neuropathic pain
+Phenytoin,Seizures
+Carbamazepine,Bipolar disorder
+Valproic acid,Epilepsy
+Levetiracetam,Seizures
+Insulin Glargine,Diabetes mellitus
+Glimepiride,Type 2 diabetes
+Sitagliptin,Blood sugar control
+Empagliflozin,Type 2 diabetes
+Montelukast,Asthma
+Theophylline,COPD
+Tiotropium,Chronic bronchitis
+Salmeterol,Asthma
+Levothyroxine,Hypothyroidism
+Carbimazole,Hyperthyroidism
+Iron supplements,Anemia
+Folic acid,Anemia
+Vitamin D3,Osteoporosis
+Calcium carbonate,Bone health
+Alendronate,Osteoporosis
+Methotrexate,Rheumatoid arthritis
+Hydroxychloroquine,Lupus
+Sulfasalazine,Ulcerative colitis
+Mesalamine,Crohn’s disease
+Omeprazole + Domperidone,Acid reflux
+Rabeprazole,Peptic ulcer
+Sucralfate,Stomach ulcer
+Ondansetron,Nausea
+Metoclopramide,Vomiting
+Domperidone,Indigestion
+Loperamide,Diarrhea
+ORS,Dehydration
+Lactulose,Constipation
+Bisacodyl,Constipation
+Polyethylene glycol,Constipation
+Dextrose,Low blood sugar
+Tramadol,Severe pain
+Morphine,Cancer pain
+Codeine,Cough suppressant
+Nimesulide,Muscle pain
+Tizanidine,Muscle spasm
+Allopurinol,Gout
+Colchicine,Gout flare
+Finasteride,Prostate enlargement
+Tamsulosin,Urinary retention
+Sildenafil,Erectile dysfunction
+Levonorgestrel,Emergency contraception
+Oral contraceptive pill,Birth control
+Acetaminophen (Paracetamol),Fever and mild to moderate pain (Antipyretic/Analgesic)
+Ibuprofen,"Pain, inflammation, and fever (NSAID)"
+Amoxicillin,Bacterial infections (Antibiotic)
+Azithromycin,Bacterial infections (Macrolide Antibiotic)
+Atorvastatin,High cholesterol (Statin/Cardiovascular)
+Lisinopril,"High blood pressure, heart failure (ACE Inhibitor/Cardiovascular)"
+Metformin,Type 2 Diabetes (Antidiabetic)
+Levothyroxine,Hypothyroidism (Thyroid Hormone Replacement)
+Amlodipine,"High blood pressure, angina (Calcium Channel Blocker/Cardiovascular)"
+Metoprolol,"High blood pressure, heart failure (Beta-Blocker/Cardiovascular)"
+Albuterol (Salbutamol),"Asthma, COPD (Bronchodilator/Respiratory)"
+Losartan,"High blood pressure, heart failure (Angiotensin II Receptor Blocker/Cardiovascular)"
+Gabapentin,"Seizures, nerve pain (Anticonvulsant/Neurological)"
+Omeprazole,"GERD, stomach ulcers (Proton Pump Inhibitor/Gastrointestinal)"
+Sertraline (Zoloft),"Depression, anxiety, OCD (SSRI Antidepressant/Neurological)"
+Rosuvastatin,High cholesterol (Statin/Cardiovascular)
+Pantoprazole,"GERD, stomach ulcers (Proton Pump Inhibitor/Gastrointestinal)"
+Escitalopram,"Depression, anxiety (SSRI Antidepressant/Neurological)"
+Dextroamphetamine/Amphetamine,"ADHD, Narcolepsy (CNS Stimulant/Neurological)"
+Hydrochlorothiazide (HCTZ),"High blood pressure, fluid retention (Diuretic/Cardiovascular)"
+Bupropion,"Depression, smoking cessation (Antidepressant/Neurological)"
+Fluoxetine (Prozac),"Depression, OCD, Panic Disorder (SSRI Antidepressant/Neurological)"
+Semaglutide,"Type 2 Diabetes, weight management (GLP-1 Agonist/Endocrine)"
+Montelukast,"Asthma, allergies (Leukotriene receptor antagonist/Respiratory)"
+Trazodone,"Depression, insomnia (Antidepressant/Neurological)"
+Simvastatin,High cholesterol (Statin/Cardiovascular)
+Tamsulosin,Enlarged prostate (BPH) (Alpha-Blocker/Urological)
+Acetaminophen/Hydrocodone,Moderate to severe pain (Opioid/Analgesic)
+Fluticasone,"Allergies, asthma (Corticosteroid/Respiratory)"
+Meloxicam,Pain and inflammation (NSAID)
+Apixaban (Eliquis),Prevention of blood clots (Anticoagulant/Cardiovascular)
+Furosemide (Lasix),"Fluid retention (Edema), heart failure (Loop Diuretic/Cardiovascular)"
+Insulin Glargine,Type 1 and 2 Diabetes (Long-acting Insulin/Endocrine)
+Duloxetine,"Depression, anxiety, nerve pain (SNRI Antidepressant/Neurological)"
+Famotidine,"Heartburn, GERD (H2 Blocker/Gastrointestinal)"
+Empagliflozin,"Type 2 Diabetes, heart failure (SGLT2 Inhibitor/Endocrine)"
+Carvedilol,"High blood pressure, heart failure (Beta-Blocker/Cardiovascular)"
+Tramadol,Moderate to moderately severe pain (Analgesic)
+Alprazolam (Xanax),"Anxiety, panic disorder (Benzodiazepine/Neurological)"
+Prednisone,"Inflammation, severe allergies, asthma (Corticosteroid)"
+Hydroxyzine,"Anxiety, itching (Antihistamine/Anxiolytic)"
+Buspirone,Anxiety (Anxiolytic/Neurological)
+Clopidogrel,Prevention of blood clots/stroke (Antiplatelet/Cardiovascular)
+Glipizide,Type 2 Diabetes (Sulfonylurea/Endocrine)
+Citalopram,"Depression, anxiety (SSRI Antidepressant/Neurological)"
+Allopurinol,Gout (Xanthine Oxidase Inhibitor)
+Aspirin,"Pain, fever, heart attack prevention (Antiplatelet/NSAID)"
+Cyclobenzaprine,Muscle spasms (Muscle Relaxant)
+Oxycodone,Moderate to severe pain (Opioid/Analgesic)
+Methylphenidate,"ADHD, Narcolepsy (CNS Stimulant/Neurological)"
+Venlafaxine,"Depression, anxiety (SNRI Antidepressant/Neurological)"
+Spironolactone,"Heart failure, high blood pressure (Potassium-sparing Diuretic/Cardiovascular)"
+Ondansetron (Zofran),Nausea and vomiting (Antiemetic/Gastrointestinal)
+Zolpidem (Ambien),Insomnia (Sedative/Hypnotic/Neurological)
+Cetirizine,"Allergies, hives (Antihistamine)"
+Lamotrigine,"Seizures, Bipolar Disorder (Anticonvulsant/Neurological)"
+Quetiapine,"Schizophrenia, Bipolar Disorder (Antipsychotic/Neurological)"
+Clonazepam,"Seizures, panic disorder (Benzodiazepine/Neurological)"
+Donepezil,Alzheimer's disease (Cholinesterase Inhibitor/Neurological)
+Latanoprost,Glaucoma (Prostaglandin Analog/Ophthalmic)
+Propranolol,"High blood pressure, anxiety, migraine prevention (Beta-Blocker/Neurological)"
+Ezetimibe,High cholesterol (Cholesterol Absorption Inhibitor/Cardiovascular)
+Topiramate,"Seizures, migraine prevention (Anticonvulsant/Neurological)"
+Diclofenac,"Pain, inflammation, arthritis (NSAID)"
+Atenolol,"High blood pressure, angina (Beta-Blocker/Cardiovascular)"
+Lisdexamfetamine,"ADHD, Binge Eating Disorder (CNS Stimulant/Neurological)"
+Doxycycline,"Bacterial infections, acne (Tetracycline Antibiotic)"
+Pregabalin (Lyrica),"Nerve pain, seizures, fibromyalgia (Neurological)"
+Cephalexin,Bacterial infections (Cephalosporin Antibiotic)
+Baclofen,Muscle spasms (Muscle Relaxant/Neurological)
+Rivaroxaban (Xarelto),Prevention of blood clots (Anticoagulant/Cardiovascular)
+Amitriptyline,"Depression, nerve pain, migraine prevention (Tricyclic Antidepressant/Neurological)"
+Fenofibrate,High triglycerides (Fibrate/Cardiovascular)
+Tizanidine,Muscle spasms (Muscle Relaxant/Neurological)
+Clonidine,"High blood pressure, ADHD (Alpha-2 Agonist/Cardiovascular/Neurological)"
+Valsartan,"High blood pressure, heart failure (ARB/Cardiovascular)"
+Dapagliflozin,"Type 2 Diabetes, heart failure, CKD (SGLT2 Inhibitor/Endocrine)"
+Aripiprazole (Abilify),"Schizophrenia, Bipolar Disorder, Depression (Antipsychotic/Neurological)"
+Oseltamivir (Tamiflu),Influenza (Flu) treatment and prevention (Antiviral)
+Ciprofloxacin,Bacterial infections (Fluoroquinolone Antibiotic)
+Aciclovir (Acyclovir),Herpes virus infections (Antiviral)
+Warfarin,Prevention of blood clots (Anticoagulant/Cardiovascular)
+Digoxin,"Heart failure, atrial fibrillation (Cardiac Glycoside/Cardiovascular)"
+Esomeprazole,"GERD, ulcers (Proton Pump Inhibitor/Gastrointestinal)"
+Levetiracetam (Keppra),Seizures (Anticonvulsant/Neurological)
+Carbidopa/Levodopa,Parkinson's Disease (Dopamine Agonist/Neurological)
+Sumatriptan,Migraine headaches (Triptan/Neurological)
+Fluconazole,Fungal infections (Antifungal)
+Sildenafil (Viagra),"Erectile dysfunction, pulmonary hypertension (PDE5 Inhibitor)"
+Diphenhydramine (Benadryl),"Allergies, insomnia (Antihistamine)"
+Loperamide,Diarrhea (Antidiarrheal/Gastrointestinal)
+Clotrimazole,"Fungal skin infections, thrush (Antifungal)"
+Nitroglycerin,Angina (chest pain) (Vasodilator/Cardiovascular)
+Hydrocortisone,"Inflammation, allergies, adrenal insufficiency (Corticosteroid)"
+Ropinirole,"Parkinson's Disease, Restless Legs Syndrome (Dopamine Agonist/Neurological)"
+Methotrexate,"Rheumatoid Arthritis, Cancer (Immunosuppressant/Antineoplastic)"
+Adalimumab (Humira),"Rheumatoid Arthritis, Psoriasis, Crohn's Disease (Biologic/Immunosuppressant)"
+Tamoxifen,Breast Cancer (Hormone Receptor Modulator/Antineoplastic)
+Alendronate,Osteoporosis (Bisphosphonate/Endocrine)
+Baloxavir marboxil (Xofluza),Influenza (Flu) treatment (Antiviral)
