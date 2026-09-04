@@ -1,0 +1,587 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script>function neighbourhoodHighlight(params) {
+  // console.log("in nieghbourhoodhighlight");
+  allNodes = nodes.get({ returnType: "Object" });
+  // originalNodes = JSON.parse(JSON.stringify(allNodes));
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    highlightActive = true;
+    var i, j;
+    var selectedNode = params.nodes[0];
+    var degrees = 2;
+
+    // mark all nodes as hard to read.
+    for (let nodeId in allNodes) {
+      // nodeColors[nodeId] = allNodes[nodeId].color;
+      allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+      if (allNodes[nodeId].hiddenLabel === undefined) {
+        allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+    var connectedNodes = network.getConnectedNodes(selectedNode);
+    var allConnectedNodes = [];
+
+    // get the second degree nodes
+    for (i = 1; i < degrees; i++) {
+      for (j = 0; j < connectedNodes.length; j++) {
+        allConnectedNodes = allConnectedNodes.concat(
+          network.getConnectedNodes(connectedNodes[j])
+        );
+      }
+    }
+
+    // all second degree nodes get a different color and their label back
+    for (i = 0; i < allConnectedNodes.length; i++) {
+      // allNodes[allConnectedNodes[i]].color = "pink";
+      allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+      if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[allConnectedNodes[i]].label =
+          allNodes[allConnectedNodes[i]].hiddenLabel;
+        allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // all first degree nodes get their own color and their label back
+    for (i = 0; i < connectedNodes.length; i++) {
+      // allNodes[connectedNodes[i]].color = undefined;
+      allNodes[connectedNodes[i]].color = nodeColors[connectedNodes[i]];
+      if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[connectedNodes[i]].label =
+          allNodes[connectedNodes[i]].hiddenLabel;
+        allNodes[connectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // the main node gets its own color and its label back.
+    // allNodes[selectedNode].color = undefined;
+    allNodes[selectedNode].color = nodeColors[selectedNode];
+    if (allNodes[selectedNode].hiddenLabel !== undefined) {
+      allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+      allNodes[selectedNode].hiddenLabel = undefined;
+    }
+  } else if (highlightActive === true) {
+    // console.log("highlightActive was true");
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      // allNodes[nodeId].color = "purple";
+      allNodes[nodeId].color = nodeColors[nodeId];
+      // delete allNodes[nodeId].color;
+      if (allNodes[nodeId].hiddenLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+        allNodes[nodeId].hiddenLabel = undefined;
+      }
+    }
+    highlightActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    // console.log("Nothing was selected");
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        // allNodes[nodeId].color = {};
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function filterHighlight(params) {
+  allNodes = nodes.get({ returnType: "Object" });
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    filterActive = true;
+    let selectedNodes = params.nodes;
+
+    // hiding all nodes and saving the label
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = true;
+      if (allNodes[nodeId].savedLabel === undefined) {
+        allNodes[nodeId].savedLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+
+    for (let i=0; i < selectedNodes.length; i++) {
+      allNodes[selectedNodes[i]].hidden = false;
+      if (allNodes[selectedNodes[i]].savedLabel !== undefined) {
+        allNodes[selectedNodes[i]].label = allNodes[selectedNodes[i]].savedLabel;
+        allNodes[selectedNodes[i]].savedLabel = undefined;
+      }
+    }
+
+  } else if (filterActive === true) {
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = false;
+      if (allNodes[nodeId].savedLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].savedLabel;
+        allNodes[nodeId].savedLabel = undefined;
+      }
+    }
+    filterActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function selectNode(nodes) {
+  network.selectNodes(nodes);
+  neighbourhoodHighlight({ nodes: nodes });
+  return nodes;
+}
+
+function selectNodes(nodes) {
+  network.selectNodes(nodes);
+  filterHighlight({nodes: nodes});
+  return nodes;
+}
+
+function highlightFilter(filter) {
+  let selectedNodes = []
+  let selectedProp = filter['property']
+  if (filter['item'] === 'node') {
+    let allNodes = nodes.get({ returnType: "Object" });
+    for (let nodeId in allNodes) {
+      if (allNodes[nodeId][selectedProp] && filter['value'].includes((allNodes[nodeId][selectedProp]).toString())) {
+        selectedNodes.push(nodeId)
+      }
+    }
+  }
+  else if (filter['item'] === 'edge'){
+    let allEdges = edges.get({returnType: 'object'});
+    // check if the selected property exists for selected edge and select the nodes connected to the edge
+    for (let edge in allEdges) {
+      if (allEdges[edge][selectedProp] && filter['value'].includes((allEdges[edge][selectedProp]).toString())) {
+        selectedNodes.push(allEdges[edge]['from'])
+        selectedNodes.push(allEdges[edge]['to'])
+      }
+    }
+  }
+  selectNodes(selectedNodes)
+}</script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+            
+            
+            
+            
+            
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/css/tom-select.min.css" integrity="sha512-43fHB3GLgZfz8QXl1RPQ8O66oIgv3po9cJ5erMt1c4QISq9dYb195T3vr5ImnJPXuVroKcGBPXBFKETW8jrPNQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/js/tom-select.complete.js" integrity="sha512-jeF9CfnvzDiw9G9xiksVjxR2lib44Gnovvkv+3CgCG6NXCD4gqlA5nDAVW5WjpA+i+/zKsUWV5xNEbW1X/HH0Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 1000px;
+                 background-color: #222222;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 1000px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+              <div id="filter-menu" class="card-header">
+                <div class="row no-gutters">
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'item')"
+                            id="select-item"
+                        >
+                        <option value="">Select a network item</option>
+                        <option value="edge">edge</option>
+                        <option value="node">node</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'property')"
+                            id="select-property"
+                        >
+                        <option value="">Select a property...</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            id="select-value"
+                        >
+                        <option value="">Select value(s)...</option>
+                    </select>
+                  </div>
+                  <div class="col-1 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="highlightFilter(filter);">Filter</button>
+                  </div>
+                  <div class="col-2 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="clearFilter(true)">Reset Selection</button>
+                  </div>
+                </div>
+              </div>
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+                  // explicitly using onItemAdd and this function as we need to save multiple values
+                  let updateValueFilter = function() {
+                      return function () {
+                      filter['value'].push(arguments[0])
+                      }
+                  }
+
+                  let valueControl = new TomSelect("#select-value",{
+                      maxItems: null,
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: updateValueFilter()
+                  });
+
+                  let addValues = function() {
+                      return function () {
+                          // clear the current value options and add the selected attribute values
+                          // tom-select handles duplicates
+                          let selectedProperty = arguments[0];
+                          valueControl.clear();
+                          valueControl.clearOptions();
+                          filter['value'] = []
+                          if (filter['item'] === 'node') {
+                              for (let each in allNodes) {
+                                  valueControl.addOption({
+                                      id:allNodes[each][selectedProperty],
+                                      title:allNodes[each][selectedProperty]
+                                  })
+                              }
+                          }
+                          else if (filter['item'] === 'edge') {
+                              for (let each in allEdges) {
+                                  valueControl.addOption({
+                                      id:allEdges[each][selectedProperty],
+                                      title:allEdges[each][selectedProperty]
+                                  })
+                              }
+                          }
+                      }
+                  };
+
+                  let propControl = new TomSelect("#select-property",{
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addValues()
+                  });
+
+                  let addProperties = function() {
+                      return function () {
+                          // loops through the selected network item and adds the attributes to dropdown
+                          // tom-select handles duplicates
+                          clearFilter(false)
+                          if (arguments[0] === 'edge') {
+                              for (let each in allEdges) {
+                                  if (allEdges.hasOwnProperty(each)) {
+                                      for (let eachProp in allEdges[each]) {
+                                          if (allEdges[each].hasOwnProperty(eachProp)) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          else if (arguments[0] === 'node') {
+                              for (let each in allNodes) {
+                                  if (allNodes.hasOwnProperty(each)) {
+                                      for (let eachProp in allNodes[each]) {
+                                          if (allNodes[each].hasOwnProperty(eachProp)
+                                              && (eachProp !== 'hidden' && eachProp !== 'savedLabel'
+                                                  && eachProp !== 'hiddenLabel')) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  };
+
+                  let itemControl = new TomSelect("#select-item",{
+                      create: false,
+                      sortField:{
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addProperties()
+                  });
+
+                  function clearFilter(reset) {
+                      // utility function to clear all the selected filter options
+                      // if reset is set to true, the existing filter will be removed
+                      // else, only the dropdown options are cleared
+                      propControl.clear();
+                      propControl.clearOptions();
+                      valueControl.clear();
+                      valueControl.clearOptions();
+                      filter = {
+                          item : '',
+                          property : '',
+                          value : []
+                      }
+                      if (reset) {
+                          itemControl.clear();
+                          filterHighlight({nodes: []})
+                      }
+                  }
+
+                  function updateFilter(value, key) {
+                      // key could be 'item' or 'property' and value is as selected in dropdown
+                      filter[key] = value
+                  }
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"font": {"color": "white"}, "group": "Medicine", "id": 0, "label": "Paracetamol", "shape": "dot", "size": 20, "title": "Medicine: Paracetamol"}, {"font": {"color": "white"}, "group": "Condition", "id": 1, "label": "Fever", "shape": "dot", "size": 30, "title": "Condition: Fever"}, {"font": {"color": "white"}, "group": "Medicine", "id": 2, "label": "Ibuprofen", "shape": "dot", "size": 20, "title": "Medicine: Ibuprofen"}, {"font": {"color": "white"}, "group": "Condition", "id": 3, "label": "Pain", "shape": "dot", "size": 30, "title": "Condition: Pain"}, {"font": {"color": "white"}, "group": "Condition", "id": 193, "label": "Pain, inflammation, and fever (NSAID)", "shape": "dot", "size": 30, "title": "Condition: Pain, inflammation, and fever (NSAID)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 4, "label": "Aspirin", "shape": "dot", "size": 20, "title": "Medicine: Aspirin"}, {"font": {"color": "white"}, "group": "Condition", "id": 5, "label": "Inflammation", "shape": "dot", "size": 30, "title": "Condition: Inflammation"}, {"font": {"color": "white"}, "group": "Condition", "id": 254, "label": "Pain, fever, heart attack prevention (Antiplatelet/NSAID)", "shape": "dot", "size": 30, "title": "Condition: Pain, fever, heart attack prevention (Antiplatelet/NSAID)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 6, "label": "Amoxicillin", "shape": "dot", "size": 20, "title": "Medicine: Amoxicillin"}, {"font": {"color": "white"}, "group": "Condition", "id": 7, "label": "Bacterial infection", "shape": "dot", "size": 30, "title": "Condition: Bacterial infection"}, {"font": {"color": "white"}, "group": "Condition", "id": 194, "label": "Bacterial infections (Antibiotic)", "shape": "dot", "size": 30, "title": "Condition: Bacterial infections (Antibiotic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 8, "label": "Ciprofloxacin", "shape": "dot", "size": 20, "title": "Medicine: Ciprofloxacin"}, {"font": {"color": "white"}, "group": "Condition", "id": 9, "label": "Urinary tract infection", "shape": "dot", "size": 30, "title": "Condition: Urinary tract infection"}, {"font": {"color": "white"}, "group": "Condition", "id": 309, "label": "Bacterial infections (Fluoroquinolone Antibiotic)", "shape": "dot", "size": 30, "title": "Condition: Bacterial infections (Fluoroquinolone Antibiotic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 10, "label": "Azithromycin", "shape": "dot", "size": 20, "title": "Medicine: Azithromycin"}, {"font": {"color": "white"}, "group": "Condition", "id": 11, "label": "Respiratory infection", "shape": "dot", "size": 30, "title": "Condition: Respiratory infection"}, {"font": {"color": "white"}, "group": "Condition", "id": 195, "label": "Bacterial infections (Macrolide Antibiotic)", "shape": "dot", "size": 30, "title": "Condition: Bacterial infections (Macrolide Antibiotic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 12, "label": "Metformin", "shape": "dot", "size": 20, "title": "Medicine: Metformin"}, {"font": {"color": "white"}, "group": "Condition", "id": 13, "label": "Type 2 diabetes", "shape": "dot", "size": 30, "title": "Condition: Type 2 diabetes"}, {"font": {"color": "white"}, "group": "Condition", "id": 198, "label": "Type 2 Diabetes (Antidiabetic)", "shape": "dot", "size": 30, "title": "Condition: Type 2 Diabetes (Antidiabetic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 14, "label": "Insulin", "shape": "dot", "size": 20, "title": "Medicine: Insulin"}, {"font": {"color": "white"}, "group": "Condition", "id": 15, "label": "Diabetes", "shape": "dot", "size": 30, "title": "Condition: Diabetes"}, {"font": {"color": "white"}, "group": "Medicine", "id": 16, "label": "Losartan", "shape": "dot", "size": 20, "title": "Medicine: Losartan"}, {"font": {"color": "white"}, "group": "Condition", "id": 17, "label": "Hypertension", "shape": "dot", "size": 30, "title": "Condition: Hypertension"}, {"font": {"color": "white"}, "group": "Condition", "id": 205, "label": "High blood pressure, heart failure (Angiotensin II Receptor Blocker/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High blood pressure, heart failure (Angiotensin II Receptor Blocker/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 18, "label": "Amlodipine", "shape": "dot", "size": 20, "title": "Medicine: Amlodipine"}, {"font": {"color": "white"}, "group": "Condition", "id": 19, "label": "High blood pressure", "shape": "dot", "size": 30, "title": "Condition: High blood pressure"}, {"font": {"color": "white"}, "group": "Condition", "id": 200, "label": "High blood pressure, angina (Calcium Channel Blocker/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High blood pressure, angina (Calcium Channel Blocker/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 20, "label": "Lisinopril", "shape": "dot", "size": 20, "title": "Medicine: Lisinopril"}, {"font": {"color": "white"}, "group": "Condition", "id": 197, "label": "High blood pressure, heart failure (ACE Inhibitor/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High blood pressure, heart failure (ACE Inhibitor/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 21, "label": "Omeprazole", "shape": "dot", "size": 20, "title": "Medicine: Omeprazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 22, "label": "Acid reflux", "shape": "dot", "size": 30, "title": "Condition: Acid reflux"}, {"font": {"color": "white"}, "group": "Condition", "id": 207, "label": "GERD, stomach ulcers (Proton Pump Inhibitor/Gastrointestinal)", "shape": "dot", "size": 30, "title": "Condition: GERD, stomach ulcers (Proton Pump Inhibitor/Gastrointestinal)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 23, "label": "Pantoprazole", "shape": "dot", "size": 20, "title": "Medicine: Pantoprazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 24, "label": "GERD", "shape": "dot", "size": 30, "title": "Condition: GERD"}, {"font": {"color": "white"}, "group": "Medicine", "id": 25, "label": "Ranitidine", "shape": "dot", "size": 20, "title": "Medicine: Ranitidine"}, {"font": {"color": "white"}, "group": "Condition", "id": 26, "label": "Stomach ulcers", "shape": "dot", "size": 30, "title": "Condition: Stomach ulcers"}, {"font": {"color": "white"}, "group": "Medicine", "id": 27, "label": "Cetirizine", "shape": "dot", "size": 20, "title": "Medicine: Cetirizine"}, {"font": {"color": "white"}, "group": "Condition", "id": 28, "label": "Allergy", "shape": "dot", "size": 30, "title": "Condition: Allergy"}, {"font": {"color": "white"}, "group": "Condition", "id": 266, "label": "Allergies, hives (Antihistamine)", "shape": "dot", "size": 30, "title": "Condition: Allergies, hives (Antihistamine)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 29, "label": "Loratadine", "shape": "dot", "size": 20, "title": "Medicine: Loratadine"}, {"font": {"color": "white"}, "group": "Condition", "id": 30, "label": "Seasonal allergy", "shape": "dot", "size": 30, "title": "Condition: Seasonal allergy"}, {"font": {"color": "white"}, "group": "Medicine", "id": 31, "label": "Diphenhydramine", "shape": "dot", "size": 20, "title": "Medicine: Diphenhydramine"}, {"font": {"color": "white"}, "group": "Condition", "id": 32, "label": "Allergic reaction", "shape": "dot", "size": 30, "title": "Condition: Allergic reaction"}, {"font": {"color": "white"}, "group": "Medicine", "id": 33, "label": "Dextromethorphan", "shape": "dot", "size": 20, "title": "Medicine: Dextromethorphan"}, {"font": {"color": "white"}, "group": "Condition", "id": 34, "label": "Cough", "shape": "dot", "size": 30, "title": "Condition: Cough"}, {"font": {"color": "white"}, "group": "Medicine", "id": 35, "label": "Guaifenesin", "shape": "dot", "size": 20, "title": "Medicine: Guaifenesin"}, {"font": {"color": "white"}, "group": "Condition", "id": 36, "label": "Chest congestion", "shape": "dot", "size": 30, "title": "Condition: Chest congestion"}, {"font": {"color": "white"}, "group": "Medicine", "id": 37, "label": "Salbutamol", "shape": "dot", "size": 20, "title": "Medicine: Salbutamol"}, {"font": {"color": "white"}, "group": "Condition", "id": 38, "label": "Asthma", "shape": "dot", "size": 30, "title": "Condition: Asthma"}, {"font": {"color": "white"}, "group": "Medicine", "id": 39, "label": "Budesonide", "shape": "dot", "size": 20, "title": "Medicine: Budesonide"}, {"font": {"color": "white"}, "group": "Medicine", "id": 40, "label": "Fluticasone", "shape": "dot", "size": 20, "title": "Medicine: Fluticasone"}, {"font": {"color": "white"}, "group": "Condition", "id": 41, "label": "Allergic rhinitis", "shape": "dot", "size": 30, "title": "Condition: Allergic rhinitis"}, {"font": {"color": "white"}, "group": "Condition", "id": 227, "label": "Allergies, asthma (Corticosteroid/Respiratory)", "shape": "dot", "size": 30, "title": "Condition: Allergies, asthma (Corticosteroid/Respiratory)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 42, "label": "Prednisolone", "shape": "dot", "size": 20, "title": "Medicine: Prednisolone"}, {"font": {"color": "white"}, "group": "Medicine", "id": 43, "label": "Hydrocortisone", "shape": "dot", "size": 20, "title": "Medicine: Hydrocortisone"}, {"font": {"color": "white"}, "group": "Condition", "id": 44, "label": "Skin allergy", "shape": "dot", "size": 30, "title": "Condition: Skin allergy"}, {"font": {"color": "white"}, "group": "Condition", "id": 331, "label": "Inflammation, allergies, adrenal insufficiency (Corticosteroid)", "shape": "dot", "size": 30, "title": "Condition: Inflammation, allergies, adrenal insufficiency (Corticosteroid)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 45, "label": "Clobetasol", "shape": "dot", "size": 20, "title": "Medicine: Clobetasol"}, {"font": {"color": "white"}, "group": "Condition", "id": 46, "label": "Eczema", "shape": "dot", "size": 30, "title": "Condition: Eczema"}, {"font": {"color": "white"}, "group": "Medicine", "id": 47, "label": "Betamethasone", "shape": "dot", "size": 20, "title": "Medicine: Betamethasone"}, {"font": {"color": "white"}, "group": "Condition", "id": 48, "label": "Psoriasis", "shape": "dot", "size": 30, "title": "Condition: Psoriasis"}, {"font": {"color": "white"}, "group": "Medicine", "id": 49, "label": "Acetaminophen", "shape": "dot", "size": 20, "title": "Medicine: Acetaminophen"}, {"font": {"color": "white"}, "group": "Medicine", "id": 50, "label": "Diclofenac", "shape": "dot", "size": 20, "title": "Medicine: Diclofenac"}, {"font": {"color": "white"}, "group": "Condition", "id": 51, "label": "Arthritis", "shape": "dot", "size": 30, "title": "Condition: Arthritis"}, {"font": {"color": "white"}, "group": "Condition", "id": 283, "label": "Pain, inflammation, arthritis (NSAID)", "shape": "dot", "size": 30, "title": "Condition: Pain, inflammation, arthritis (NSAID)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 52, "label": "Naproxen", "shape": "dot", "size": 20, "title": "Medicine: Naproxen"}, {"font": {"color": "white"}, "group": "Condition", "id": 53, "label": "Menstrual pain", "shape": "dot", "size": 30, "title": "Condition: Menstrual pain"}, {"font": {"color": "white"}, "group": "Medicine", "id": 54, "label": "Clindamycin", "shape": "dot", "size": 20, "title": "Medicine: Clindamycin"}, {"font": {"color": "white"}, "group": "Condition", "id": 55, "label": "Skin infection", "shape": "dot", "size": 30, "title": "Condition: Skin infection"}, {"font": {"color": "white"}, "group": "Medicine", "id": 56, "label": "Doxycycline", "shape": "dot", "size": 20, "title": "Medicine: Doxycycline"}, {"font": {"color": "white"}, "group": "Condition", "id": 57, "label": "Acne", "shape": "dot", "size": 30, "title": "Condition: Acne"}, {"font": {"color": "white"}, "group": "Condition", "id": 288, "label": "Bacterial infections, acne (Tetracycline Antibiotic)", "shape": "dot", "size": 30, "title": "Condition: Bacterial infections, acne (Tetracycline Antibiotic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 58, "label": "Tetracycline", "shape": "dot", "size": 20, "title": "Medicine: Tetracycline"}, {"font": {"color": "white"}, "group": "Condition", "id": 59, "label": "Pneumonia", "shape": "dot", "size": 30, "title": "Condition: Pneumonia"}, {"font": {"color": "white"}, "group": "Medicine", "id": 60, "label": "Metronidazole", "shape": "dot", "size": 20, "title": "Medicine: Metronidazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 61, "label": "Parasitic infection", "shape": "dot", "size": 30, "title": "Condition: Parasitic infection"}, {"font": {"color": "white"}, "group": "Medicine", "id": 62, "label": "Fluconazole", "shape": "dot", "size": 20, "title": "Medicine: Fluconazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 63, "label": "Fungal infection", "shape": "dot", "size": 30, "title": "Condition: Fungal infection"}, {"font": {"color": "white"}, "group": "Condition", "id": 322, "label": "Fungal infections (Antifungal)", "shape": "dot", "size": 30, "title": "Condition: Fungal infections (Antifungal)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 64, "label": "Ketoconazole", "shape": "dot", "size": 20, "title": "Medicine: Ketoconazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 65, "label": "Dandruff", "shape": "dot", "size": 30, "title": "Condition: Dandruff"}, {"font": {"color": "white"}, "group": "Medicine", "id": 66, "label": "Miconazole", "shape": "dot", "size": 20, "title": "Medicine: Miconazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 67, "label": "Yeast infection", "shape": "dot", "size": 30, "title": "Condition: Yeast infection"}, {"font": {"color": "white"}, "group": "Medicine", "id": 68, "label": "Clotrimazole", "shape": "dot", "size": 20, "title": "Medicine: Clotrimazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 69, "label": "Ringworm", "shape": "dot", "size": 30, "title": "Condition: Ringworm"}, {"font": {"color": "white"}, "group": "Condition", "id": 328, "label": "Fungal skin infections, thrush (Antifungal)", "shape": "dot", "size": 30, "title": "Condition: Fungal skin infections, thrush (Antifungal)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 70, "label": "Atorvastatin", "shape": "dot", "size": 20, "title": "Medicine: Atorvastatin"}, {"font": {"color": "white"}, "group": "Condition", "id": 71, "label": "High cholesterol", "shape": "dot", "size": 30, "title": "Condition: High cholesterol"}, {"font": {"color": "white"}, "group": "Condition", "id": 196, "label": "High cholesterol (Statin/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High cholesterol (Statin/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 72, "label": "Rosuvastatin", "shape": "dot", "size": 20, "title": "Medicine: Rosuvastatin"}, {"font": {"color": "white"}, "group": "Condition", "id": 73, "label": "Hyperlipidemia", "shape": "dot", "size": 30, "title": "Condition: Hyperlipidemia"}, {"font": {"color": "white"}, "group": "Medicine", "id": 74, "label": "Simvastatin", "shape": "dot", "size": 20, "title": "Medicine: Simvastatin"}, {"font": {"color": "white"}, "group": "Medicine", "id": 75, "label": "Furosemide", "shape": "dot", "size": 20, "title": "Medicine: Furosemide"}, {"font": {"color": "white"}, "group": "Condition", "id": 76, "label": "Edema", "shape": "dot", "size": 30, "title": "Condition: Edema"}, {"font": {"color": "white"}, "group": "Medicine", "id": 77, "label": "Hydrochlorothiazide", "shape": "dot", "size": 20, "title": "Medicine: Hydrochlorothiazide"}, {"font": {"color": "white"}, "group": "Medicine", "id": 78, "label": "Spironolactone", "shape": "dot", "size": 20, "title": "Medicine: Spironolactone"}, {"font": {"color": "white"}, "group": "Condition", "id": 79, "label": "Heart failure", "shape": "dot", "size": 30, "title": "Condition: Heart failure"}, {"font": {"color": "white"}, "group": "Condition", "id": 261, "label": "Heart failure, high blood pressure (Potassium-sparing Diuretic/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: Heart failure, high blood pressure (Potassium-sparing Diuretic/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 80, "label": "Warfarin", "shape": "dot", "size": 20, "title": "Medicine: Warfarin"}, {"font": {"color": "white"}, "group": "Condition", "id": 81, "label": "Blood clot prevention", "shape": "dot", "size": 30, "title": "Condition: Blood clot prevention"}, {"font": {"color": "white"}, "group": "Condition", "id": 231, "label": "Prevention of blood clots (Anticoagulant/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: Prevention of blood clots (Anticoagulant/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 82, "label": "Heparin", "shape": "dot", "size": 20, "title": "Medicine: Heparin"}, {"font": {"color": "white"}, "group": "Condition", "id": 83, "label": "Deep vein thrombosis", "shape": "dot", "size": 30, "title": "Condition: Deep vein thrombosis"}, {"font": {"color": "white"}, "group": "Medicine", "id": 84, "label": "Clopidogrel", "shape": "dot", "size": 20, "title": "Medicine: Clopidogrel"}, {"font": {"color": "white"}, "group": "Condition", "id": 85, "label": "Stroke prevention", "shape": "dot", "size": 30, "title": "Condition: Stroke prevention"}, {"font": {"color": "white"}, "group": "Condition", "id": 249, "label": "Prevention of blood clots/stroke (Antiplatelet/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: Prevention of blood clots/stroke (Antiplatelet/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 86, "label": "Aspirin (low dose)", "shape": "dot", "size": 20, "title": "Medicine: Aspirin (low dose)"}, {"font": {"color": "white"}, "group": "Condition", "id": 87, "label": "Heart attack prevention", "shape": "dot", "size": 30, "title": "Condition: Heart attack prevention"}, {"font": {"color": "white"}, "group": "Medicine", "id": 88, "label": "Diazepam", "shape": "dot", "size": 20, "title": "Medicine: Diazepam"}, {"font": {"color": "white"}, "group": "Condition", "id": 89, "label": "Anxiety", "shape": "dot", "size": 30, "title": "Condition: Anxiety"}, {"font": {"color": "white"}, "group": "Medicine", "id": 90, "label": "Lorazepam", "shape": "dot", "size": 20, "title": "Medicine: Lorazepam"}, {"font": {"color": "white"}, "group": "Condition", "id": 91, "label": "Insomnia", "shape": "dot", "size": 30, "title": "Condition: Insomnia"}, {"font": {"color": "white"}, "group": "Medicine", "id": 92, "label": "Alprazolam", "shape": "dot", "size": 20, "title": "Medicine: Alprazolam"}, {"font": {"color": "white"}, "group": "Condition", "id": 93, "label": "Panic disorder", "shape": "dot", "size": 30, "title": "Condition: Panic disorder"}, {"font": {"color": "white"}, "group": "Medicine", "id": 94, "label": "Sertraline", "shape": "dot", "size": 20, "title": "Medicine: Sertraline"}, {"font": {"color": "white"}, "group": "Condition", "id": 95, "label": "Depression", "shape": "dot", "size": 30, "title": "Condition: Depression"}, {"font": {"color": "white"}, "group": "Medicine", "id": 96, "label": "Fluoxetine", "shape": "dot", "size": 20, "title": "Medicine: Fluoxetine"}, {"font": {"color": "white"}, "group": "Condition", "id": 97, "label": "OCD", "shape": "dot", "size": 30, "title": "Condition: OCD"}, {"font": {"color": "white"}, "group": "Medicine", "id": 98, "label": "Escitalopram", "shape": "dot", "size": 20, "title": "Medicine: Escitalopram"}, {"font": {"color": "white"}, "group": "Condition", "id": 99, "label": "Anxiety disorder", "shape": "dot", "size": 30, "title": "Condition: Anxiety disorder"}, {"font": {"color": "white"}, "group": "Condition", "id": 210, "label": "Depression, anxiety (SSRI Antidepressant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Depression, anxiety (SSRI Antidepressant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 100, "label": "Amitriptyline", "shape": "dot", "size": 20, "title": "Medicine: Amitriptyline"}, {"font": {"color": "white"}, "group": "Condition", "id": 101, "label": "Chronic pain", "shape": "dot", "size": 30, "title": "Condition: Chronic pain"}, {"font": {"color": "white"}, "group": "Condition", "id": 296, "label": "Depression, nerve pain, migraine prevention (Tricyclic Antidepressant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Depression, nerve pain, migraine prevention (Tricyclic Antidepressant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 102, "label": "Duloxetine", "shape": "dot", "size": 20, "title": "Medicine: Duloxetine"}, {"font": {"color": "white"}, "group": "Condition", "id": 103, "label": "Nerve pain", "shape": "dot", "size": 30, "title": "Condition: Nerve pain"}, {"font": {"color": "white"}, "group": "Condition", "id": 235, "label": "Depression, anxiety, nerve pain (SNRI Antidepressant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Depression, anxiety, nerve pain (SNRI Antidepressant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 104, "label": "Pregabalin", "shape": "dot", "size": 20, "title": "Medicine: Pregabalin"}, {"font": {"color": "white"}, "group": "Condition", "id": 105, "label": "Epilepsy", "shape": "dot", "size": 30, "title": "Condition: Epilepsy"}, {"font": {"color": "white"}, "group": "Medicine", "id": 106, "label": "Gabapentin", "shape": "dot", "size": 20, "title": "Medicine: Gabapentin"}, {"font": {"color": "white"}, "group": "Condition", "id": 107, "label": "Neuropathic pain", "shape": "dot", "size": 30, "title": "Condition: Neuropathic pain"}, {"font": {"color": "white"}, "group": "Condition", "id": 206, "label": "Seizures, nerve pain (Anticonvulsant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Seizures, nerve pain (Anticonvulsant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 108, "label": "Phenytoin", "shape": "dot", "size": 20, "title": "Medicine: Phenytoin"}, {"font": {"color": "white"}, "group": "Condition", "id": 109, "label": "Seizures", "shape": "dot", "size": 30, "title": "Condition: Seizures"}, {"font": {"color": "white"}, "group": "Medicine", "id": 110, "label": "Carbamazepine", "shape": "dot", "size": 20, "title": "Medicine: Carbamazepine"}, {"font": {"color": "white"}, "group": "Condition", "id": 111, "label": "Bipolar disorder", "shape": "dot", "size": 30, "title": "Condition: Bipolar disorder"}, {"font": {"color": "white"}, "group": "Medicine", "id": 112, "label": "Valproic acid", "shape": "dot", "size": 20, "title": "Medicine: Valproic acid"}, {"font": {"color": "white"}, "group": "Medicine", "id": 113, "label": "Levetiracetam", "shape": "dot", "size": 20, "title": "Medicine: Levetiracetam"}, {"font": {"color": "white"}, "group": "Medicine", "id": 114, "label": "Insulin Glargine", "shape": "dot", "size": 20, "title": "Medicine: Insulin Glargine"}, {"font": {"color": "white"}, "group": "Condition", "id": 115, "label": "Diabetes mellitus", "shape": "dot", "size": 30, "title": "Condition: Diabetes mellitus"}, {"font": {"color": "white"}, "group": "Condition", "id": 234, "label": "Type 1 and 2 Diabetes (Long-acting Insulin/Endocrine)", "shape": "dot", "size": 30, "title": "Condition: Type 1 and 2 Diabetes (Long-acting Insulin/Endocrine)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 116, "label": "Glimepiride", "shape": "dot", "size": 20, "title": "Medicine: Glimepiride"}, {"font": {"color": "white"}, "group": "Medicine", "id": 117, "label": "Sitagliptin", "shape": "dot", "size": 20, "title": "Medicine: Sitagliptin"}, {"font": {"color": "white"}, "group": "Condition", "id": 118, "label": "Blood sugar control", "shape": "dot", "size": 30, "title": "Condition: Blood sugar control"}, {"font": {"color": "white"}, "group": "Medicine", "id": 119, "label": "Empagliflozin", "shape": "dot", "size": 20, "title": "Medicine: Empagliflozin"}, {"font": {"color": "white"}, "group": "Condition", "id": 238, "label": "Type 2 Diabetes, heart failure (SGLT2 Inhibitor/Endocrine)", "shape": "dot", "size": 30, "title": "Condition: Type 2 Diabetes, heart failure (SGLT2 Inhibitor/Endocrine)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 120, "label": "Montelukast", "shape": "dot", "size": 20, "title": "Medicine: Montelukast"}, {"font": {"color": "white"}, "group": "Condition", "id": 221, "label": "Asthma, allergies (Leukotriene receptor antagonist/Respiratory)", "shape": "dot", "size": 30, "title": "Condition: Asthma, allergies (Leukotriene receptor antagonist/Respiratory)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 121, "label": "Theophylline", "shape": "dot", "size": 20, "title": "Medicine: Theophylline"}, {"font": {"color": "white"}, "group": "Condition", "id": 122, "label": "COPD", "shape": "dot", "size": 30, "title": "Condition: COPD"}, {"font": {"color": "white"}, "group": "Medicine", "id": 123, "label": "Tiotropium", "shape": "dot", "size": 20, "title": "Medicine: Tiotropium"}, {"font": {"color": "white"}, "group": "Condition", "id": 124, "label": "Chronic bronchitis", "shape": "dot", "size": 30, "title": "Condition: Chronic bronchitis"}, {"font": {"color": "white"}, "group": "Medicine", "id": 125, "label": "Salmeterol", "shape": "dot", "size": 20, "title": "Medicine: Salmeterol"}, {"font": {"color": "white"}, "group": "Medicine", "id": 126, "label": "Levothyroxine", "shape": "dot", "size": 20, "title": "Medicine: Levothyroxine"}, {"font": {"color": "white"}, "group": "Condition", "id": 127, "label": "Hypothyroidism", "shape": "dot", "size": 30, "title": "Condition: Hypothyroidism"}, {"font": {"color": "white"}, "group": "Condition", "id": 199, "label": "Hypothyroidism (Thyroid Hormone Replacement)", "shape": "dot", "size": 30, "title": "Condition: Hypothyroidism (Thyroid Hormone Replacement)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 128, "label": "Carbimazole", "shape": "dot", "size": 20, "title": "Medicine: Carbimazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 129, "label": "Hyperthyroidism", "shape": "dot", "size": 30, "title": "Condition: Hyperthyroidism"}, {"font": {"color": "white"}, "group": "Medicine", "id": 130, "label": "Iron supplements", "shape": "dot", "size": 20, "title": "Medicine: Iron supplements"}, {"font": {"color": "white"}, "group": "Condition", "id": 131, "label": "Anemia", "shape": "dot", "size": 30, "title": "Condition: Anemia"}, {"font": {"color": "white"}, "group": "Medicine", "id": 132, "label": "Folic acid", "shape": "dot", "size": 20, "title": "Medicine: Folic acid"}, {"font": {"color": "white"}, "group": "Medicine", "id": 133, "label": "Vitamin D3", "shape": "dot", "size": 20, "title": "Medicine: Vitamin D3"}, {"font": {"color": "white"}, "group": "Condition", "id": 134, "label": "Osteoporosis", "shape": "dot", "size": 30, "title": "Condition: Osteoporosis"}, {"font": {"color": "white"}, "group": "Medicine", "id": 135, "label": "Calcium carbonate", "shape": "dot", "size": 20, "title": "Medicine: Calcium carbonate"}, {"font": {"color": "white"}, "group": "Condition", "id": 136, "label": "Bone health", "shape": "dot", "size": 30, "title": "Condition: Bone health"}, {"font": {"color": "white"}, "group": "Medicine", "id": 137, "label": "Alendronate", "shape": "dot", "size": 20, "title": "Medicine: Alendronate"}, {"font": {"color": "white"}, "group": "Condition", "id": 339, "label": "Osteoporosis (Bisphosphonate/Endocrine)", "shape": "dot", "size": 30, "title": "Condition: Osteoporosis (Bisphosphonate/Endocrine)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 138, "label": "Methotrexate", "shape": "dot", "size": 20, "title": "Medicine: Methotrexate"}, {"font": {"color": "white"}, "group": "Condition", "id": 139, "label": "Rheumatoid arthritis", "shape": "dot", "size": 30, "title": "Condition: Rheumatoid arthritis"}, {"font": {"color": "white"}, "group": "Condition", "id": 334, "label": "Rheumatoid Arthritis, Cancer (Immunosuppressant/Antineoplastic)", "shape": "dot", "size": 30, "title": "Condition: Rheumatoid Arthritis, Cancer (Immunosuppressant/Antineoplastic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 140, "label": "Hydroxychloroquine", "shape": "dot", "size": 20, "title": "Medicine: Hydroxychloroquine"}, {"font": {"color": "white"}, "group": "Condition", "id": 141, "label": "Lupus", "shape": "dot", "size": 30, "title": "Condition: Lupus"}, {"font": {"color": "white"}, "group": "Medicine", "id": 142, "label": "Sulfasalazine", "shape": "dot", "size": 20, "title": "Medicine: Sulfasalazine"}, {"font": {"color": "white"}, "group": "Condition", "id": 143, "label": "Ulcerative colitis", "shape": "dot", "size": 30, "title": "Condition: Ulcerative colitis"}, {"font": {"color": "white"}, "group": "Medicine", "id": 144, "label": "Mesalamine", "shape": "dot", "size": 20, "title": "Medicine: Mesalamine"}, {"font": {"color": "white"}, "group": "Condition", "id": 145, "label": "Crohn\u2019s disease", "shape": "dot", "size": 30, "title": "Condition: Crohn\u2019s disease"}, {"font": {"color": "white"}, "group": "Medicine", "id": 146, "label": "Omeprazole + Domperidone", "shape": "dot", "size": 20, "title": "Medicine: Omeprazole + Domperidone"}, {"font": {"color": "white"}, "group": "Medicine", "id": 147, "label": "Rabeprazole", "shape": "dot", "size": 20, "title": "Medicine: Rabeprazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 148, "label": "Peptic ulcer", "shape": "dot", "size": 30, "title": "Condition: Peptic ulcer"}, {"font": {"color": "white"}, "group": "Medicine", "id": 149, "label": "Sucralfate", "shape": "dot", "size": 20, "title": "Medicine: Sucralfate"}, {"font": {"color": "white"}, "group": "Condition", "id": 150, "label": "Stomach ulcer", "shape": "dot", "size": 30, "title": "Condition: Stomach ulcer"}, {"font": {"color": "white"}, "group": "Medicine", "id": 151, "label": "Ondansetron", "shape": "dot", "size": 20, "title": "Medicine: Ondansetron"}, {"font": {"color": "white"}, "group": "Condition", "id": 152, "label": "Nausea", "shape": "dot", "size": 30, "title": "Condition: Nausea"}, {"font": {"color": "white"}, "group": "Medicine", "id": 153, "label": "Metoclopramide", "shape": "dot", "size": 20, "title": "Medicine: Metoclopramide"}, {"font": {"color": "white"}, "group": "Condition", "id": 154, "label": "Vomiting", "shape": "dot", "size": 30, "title": "Condition: Vomiting"}, {"font": {"color": "white"}, "group": "Medicine", "id": 155, "label": "Domperidone", "shape": "dot", "size": 20, "title": "Medicine: Domperidone"}, {"font": {"color": "white"}, "group": "Condition", "id": 156, "label": "Indigestion", "shape": "dot", "size": 30, "title": "Condition: Indigestion"}, {"font": {"color": "white"}, "group": "Medicine", "id": 157, "label": "Loperamide", "shape": "dot", "size": 20, "title": "Medicine: Loperamide"}, {"font": {"color": "white"}, "group": "Condition", "id": 158, "label": "Diarrhea", "shape": "dot", "size": 30, "title": "Condition: Diarrhea"}, {"font": {"color": "white"}, "group": "Condition", "id": 327, "label": "Diarrhea (Antidiarrheal/Gastrointestinal)", "shape": "dot", "size": 30, "title": "Condition: Diarrhea (Antidiarrheal/Gastrointestinal)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 159, "label": "ORS", "shape": "dot", "size": 20, "title": "Medicine: ORS"}, {"font": {"color": "white"}, "group": "Condition", "id": 160, "label": "Dehydration", "shape": "dot", "size": 30, "title": "Condition: Dehydration"}, {"font": {"color": "white"}, "group": "Medicine", "id": 161, "label": "Lactulose", "shape": "dot", "size": 20, "title": "Medicine: Lactulose"}, {"font": {"color": "white"}, "group": "Condition", "id": 162, "label": "Constipation", "shape": "dot", "size": 30, "title": "Condition: Constipation"}, {"font": {"color": "white"}, "group": "Medicine", "id": 163, "label": "Bisacodyl", "shape": "dot", "size": 20, "title": "Medicine: Bisacodyl"}, {"font": {"color": "white"}, "group": "Medicine", "id": 164, "label": "Polyethylene glycol", "shape": "dot", "size": 20, "title": "Medicine: Polyethylene glycol"}, {"font": {"color": "white"}, "group": "Medicine", "id": 165, "label": "Dextrose", "shape": "dot", "size": 20, "title": "Medicine: Dextrose"}, {"font": {"color": "white"}, "group": "Condition", "id": 166, "label": "Low blood sugar", "shape": "dot", "size": 30, "title": "Condition: Low blood sugar"}, {"font": {"color": "white"}, "group": "Medicine", "id": 167, "label": "Tramadol", "shape": "dot", "size": 20, "title": "Medicine: Tramadol"}, {"font": {"color": "white"}, "group": "Condition", "id": 168, "label": "Severe pain", "shape": "dot", "size": 30, "title": "Condition: Severe pain"}, {"font": {"color": "white"}, "group": "Condition", "id": 240, "label": "Moderate to moderately severe pain (Analgesic)", "shape": "dot", "size": 30, "title": "Condition: Moderate to moderately severe pain (Analgesic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 169, "label": "Morphine", "shape": "dot", "size": 20, "title": "Medicine: Morphine"}, {"font": {"color": "white"}, "group": "Condition", "id": 170, "label": "Cancer pain", "shape": "dot", "size": 30, "title": "Condition: Cancer pain"}, {"font": {"color": "white"}, "group": "Medicine", "id": 171, "label": "Codeine", "shape": "dot", "size": 20, "title": "Medicine: Codeine"}, {"font": {"color": "white"}, "group": "Condition", "id": 172, "label": "Cough suppressant", "shape": "dot", "size": 30, "title": "Condition: Cough suppressant"}, {"font": {"color": "white"}, "group": "Medicine", "id": 173, "label": "Nimesulide", "shape": "dot", "size": 20, "title": "Medicine: Nimesulide"}, {"font": {"color": "white"}, "group": "Condition", "id": 174, "label": "Muscle pain", "shape": "dot", "size": 30, "title": "Condition: Muscle pain"}, {"font": {"color": "white"}, "group": "Medicine", "id": 175, "label": "Tizanidine", "shape": "dot", "size": 20, "title": "Medicine: Tizanidine"}, {"font": {"color": "white"}, "group": "Condition", "id": 176, "label": "Muscle spasm", "shape": "dot", "size": 30, "title": "Condition: Muscle spasm"}, {"font": {"color": "white"}, "group": "Condition", "id": 294, "label": "Muscle spasms (Muscle Relaxant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Muscle spasms (Muscle Relaxant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 177, "label": "Allopurinol", "shape": "dot", "size": 20, "title": "Medicine: Allopurinol"}, {"font": {"color": "white"}, "group": "Condition", "id": 178, "label": "Gout", "shape": "dot", "size": 30, "title": "Condition: Gout"}, {"font": {"color": "white"}, "group": "Condition", "id": 253, "label": "Gout (Xanthine Oxidase Inhibitor)", "shape": "dot", "size": 30, "title": "Condition: Gout (Xanthine Oxidase Inhibitor)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 179, "label": "Colchicine", "shape": "dot", "size": 20, "title": "Medicine: Colchicine"}, {"font": {"color": "white"}, "group": "Condition", "id": 180, "label": "Gout flare", "shape": "dot", "size": 30, "title": "Condition: Gout flare"}, {"font": {"color": "white"}, "group": "Medicine", "id": 181, "label": "Finasteride", "shape": "dot", "size": 20, "title": "Medicine: Finasteride"}, {"font": {"color": "white"}, "group": "Condition", "id": 182, "label": "Prostate enlargement", "shape": "dot", "size": 30, "title": "Condition: Prostate enlargement"}, {"font": {"color": "white"}, "group": "Medicine", "id": 183, "label": "Tamsulosin", "shape": "dot", "size": 20, "title": "Medicine: Tamsulosin"}, {"font": {"color": "white"}, "group": "Condition", "id": 184, "label": "Urinary retention", "shape": "dot", "size": 30, "title": "Condition: Urinary retention"}, {"font": {"color": "white"}, "group": "Condition", "id": 224, "label": "Enlarged prostate (BPH) (Alpha-Blocker/Urological)", "shape": "dot", "size": 30, "title": "Condition: Enlarged prostate (BPH) (Alpha-Blocker/Urological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 185, "label": "Sildenafil", "shape": "dot", "size": 20, "title": "Medicine: Sildenafil"}, {"font": {"color": "white"}, "group": "Condition", "id": 186, "label": "Erectile dysfunction", "shape": "dot", "size": 30, "title": "Condition: Erectile dysfunction"}, {"font": {"color": "white"}, "group": "Medicine", "id": 187, "label": "Levonorgestrel", "shape": "dot", "size": 20, "title": "Medicine: Levonorgestrel"}, {"font": {"color": "white"}, "group": "Condition", "id": 188, "label": "Emergency contraception", "shape": "dot", "size": 30, "title": "Condition: Emergency contraception"}, {"font": {"color": "white"}, "group": "Medicine", "id": 189, "label": "Oral contraceptive pill", "shape": "dot", "size": 20, "title": "Medicine: Oral contraceptive pill"}, {"font": {"color": "white"}, "group": "Condition", "id": 190, "label": "Birth control", "shape": "dot", "size": 30, "title": "Condition: Birth control"}, {"font": {"color": "white"}, "group": "Medicine", "id": 191, "label": "Acetaminophen (Paracetamol)", "shape": "dot", "size": 20, "title": "Medicine: Acetaminophen (Paracetamol)"}, {"font": {"color": "white"}, "group": "Condition", "id": 192, "label": "Fever and mild to moderate pain (Antipyretic/Analgesic)", "shape": "dot", "size": 30, "title": "Condition: Fever and mild to moderate pain (Antipyretic/Analgesic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 201, "label": "Metoprolol", "shape": "dot", "size": 20, "title": "Medicine: Metoprolol"}, {"font": {"color": "white"}, "group": "Condition", "id": 202, "label": "High blood pressure, heart failure (Beta-Blocker/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High blood pressure, heart failure (Beta-Blocker/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 203, "label": "Albuterol (Salbutamol)", "shape": "dot", "size": 20, "title": "Medicine: Albuterol (Salbutamol)"}, {"font": {"color": "white"}, "group": "Condition", "id": 204, "label": "Asthma, COPD (Bronchodilator/Respiratory)", "shape": "dot", "size": 30, "title": "Condition: Asthma, COPD (Bronchodilator/Respiratory)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 208, "label": "Sertraline (Zoloft)", "shape": "dot", "size": 20, "title": "Medicine: Sertraline (Zoloft)"}, {"font": {"color": "white"}, "group": "Condition", "id": 209, "label": "Depression, anxiety, OCD (SSRI Antidepressant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Depression, anxiety, OCD (SSRI Antidepressant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 211, "label": "Dextroamphetamine/Amphetamine", "shape": "dot", "size": 20, "title": "Medicine: Dextroamphetamine/Amphetamine"}, {"font": {"color": "white"}, "group": "Condition", "id": 212, "label": "ADHD, Narcolepsy (CNS Stimulant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: ADHD, Narcolepsy (CNS Stimulant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 213, "label": "Hydrochlorothiazide (HCTZ)", "shape": "dot", "size": 20, "title": "Medicine: Hydrochlorothiazide (HCTZ)"}, {"font": {"color": "white"}, "group": "Condition", "id": 214, "label": "High blood pressure, fluid retention (Diuretic/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High blood pressure, fluid retention (Diuretic/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 215, "label": "Bupropion", "shape": "dot", "size": 20, "title": "Medicine: Bupropion"}, {"font": {"color": "white"}, "group": "Condition", "id": 216, "label": "Depression, smoking cessation (Antidepressant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Depression, smoking cessation (Antidepressant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 217, "label": "Fluoxetine (Prozac)", "shape": "dot", "size": 20, "title": "Medicine: Fluoxetine (Prozac)"}, {"font": {"color": "white"}, "group": "Condition", "id": 218, "label": "Depression, OCD, Panic Disorder (SSRI Antidepressant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Depression, OCD, Panic Disorder (SSRI Antidepressant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 219, "label": "Semaglutide", "shape": "dot", "size": 20, "title": "Medicine: Semaglutide"}, {"font": {"color": "white"}, "group": "Condition", "id": 220, "label": "Type 2 Diabetes, weight management (GLP-1 Agonist/Endocrine)", "shape": "dot", "size": 30, "title": "Condition: Type 2 Diabetes, weight management (GLP-1 Agonist/Endocrine)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 222, "label": "Trazodone", "shape": "dot", "size": 20, "title": "Medicine: Trazodone"}, {"font": {"color": "white"}, "group": "Condition", "id": 223, "label": "Depression, insomnia (Antidepressant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Depression, insomnia (Antidepressant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 225, "label": "Acetaminophen/Hydrocodone", "shape": "dot", "size": 20, "title": "Medicine: Acetaminophen/Hydrocodone"}, {"font": {"color": "white"}, "group": "Condition", "id": 226, "label": "Moderate to severe pain (Opioid/Analgesic)", "shape": "dot", "size": 30, "title": "Condition: Moderate to severe pain (Opioid/Analgesic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 228, "label": "Meloxicam", "shape": "dot", "size": 20, "title": "Medicine: Meloxicam"}, {"font": {"color": "white"}, "group": "Condition", "id": 229, "label": "Pain and inflammation (NSAID)", "shape": "dot", "size": 30, "title": "Condition: Pain and inflammation (NSAID)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 230, "label": "Apixaban (Eliquis)", "shape": "dot", "size": 20, "title": "Medicine: Apixaban (Eliquis)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 232, "label": "Furosemide (Lasix)", "shape": "dot", "size": 20, "title": "Medicine: Furosemide (Lasix)"}, {"font": {"color": "white"}, "group": "Condition", "id": 233, "label": "Fluid retention (Edema), heart failure (Loop Diuretic/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: Fluid retention (Edema), heart failure (Loop Diuretic/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 236, "label": "Famotidine", "shape": "dot", "size": 20, "title": "Medicine: Famotidine"}, {"font": {"color": "white"}, "group": "Condition", "id": 237, "label": "Heartburn, GERD (H2 Blocker/Gastrointestinal)", "shape": "dot", "size": 30, "title": "Condition: Heartburn, GERD (H2 Blocker/Gastrointestinal)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 239, "label": "Carvedilol", "shape": "dot", "size": 20, "title": "Medicine: Carvedilol"}, {"font": {"color": "white"}, "group": "Medicine", "id": 241, "label": "Alprazolam (Xanax)", "shape": "dot", "size": 20, "title": "Medicine: Alprazolam (Xanax)"}, {"font": {"color": "white"}, "group": "Condition", "id": 242, "label": "Anxiety, panic disorder (Benzodiazepine/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Anxiety, panic disorder (Benzodiazepine/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 243, "label": "Prednisone", "shape": "dot", "size": 20, "title": "Medicine: Prednisone"}, {"font": {"color": "white"}, "group": "Condition", "id": 244, "label": "Inflammation, severe allergies, asthma (Corticosteroid)", "shape": "dot", "size": 30, "title": "Condition: Inflammation, severe allergies, asthma (Corticosteroid)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 245, "label": "Hydroxyzine", "shape": "dot", "size": 20, "title": "Medicine: Hydroxyzine"}, {"font": {"color": "white"}, "group": "Condition", "id": 246, "label": "Anxiety, itching (Antihistamine/Anxiolytic)", "shape": "dot", "size": 30, "title": "Condition: Anxiety, itching (Antihistamine/Anxiolytic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 247, "label": "Buspirone", "shape": "dot", "size": 20, "title": "Medicine: Buspirone"}, {"font": {"color": "white"}, "group": "Condition", "id": 248, "label": "Anxiety (Anxiolytic/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Anxiety (Anxiolytic/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 250, "label": "Glipizide", "shape": "dot", "size": 20, "title": "Medicine: Glipizide"}, {"font": {"color": "white"}, "group": "Condition", "id": 251, "label": "Type 2 Diabetes (Sulfonylurea/Endocrine)", "shape": "dot", "size": 30, "title": "Condition: Type 2 Diabetes (Sulfonylurea/Endocrine)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 252, "label": "Citalopram", "shape": "dot", "size": 20, "title": "Medicine: Citalopram"}, {"font": {"color": "white"}, "group": "Medicine", "id": 255, "label": "Cyclobenzaprine", "shape": "dot", "size": 20, "title": "Medicine: Cyclobenzaprine"}, {"font": {"color": "white"}, "group": "Condition", "id": 256, "label": "Muscle spasms (Muscle Relaxant)", "shape": "dot", "size": 30, "title": "Condition: Muscle spasms (Muscle Relaxant)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 257, "label": "Oxycodone", "shape": "dot", "size": 20, "title": "Medicine: Oxycodone"}, {"font": {"color": "white"}, "group": "Medicine", "id": 258, "label": "Methylphenidate", "shape": "dot", "size": 20, "title": "Medicine: Methylphenidate"}, {"font": {"color": "white"}, "group": "Medicine", "id": 259, "label": "Venlafaxine", "shape": "dot", "size": 20, "title": "Medicine: Venlafaxine"}, {"font": {"color": "white"}, "group": "Condition", "id": 260, "label": "Depression, anxiety (SNRI Antidepressant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Depression, anxiety (SNRI Antidepressant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 262, "label": "Ondansetron (Zofran)", "shape": "dot", "size": 20, "title": "Medicine: Ondansetron (Zofran)"}, {"font": {"color": "white"}, "group": "Condition", "id": 263, "label": "Nausea and vomiting (Antiemetic/Gastrointestinal)", "shape": "dot", "size": 30, "title": "Condition: Nausea and vomiting (Antiemetic/Gastrointestinal)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 264, "label": "Zolpidem (Ambien)", "shape": "dot", "size": 20, "title": "Medicine: Zolpidem (Ambien)"}, {"font": {"color": "white"}, "group": "Condition", "id": 265, "label": "Insomnia (Sedative/Hypnotic/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Insomnia (Sedative/Hypnotic/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 267, "label": "Lamotrigine", "shape": "dot", "size": 20, "title": "Medicine: Lamotrigine"}, {"font": {"color": "white"}, "group": "Condition", "id": 268, "label": "Seizures, Bipolar Disorder (Anticonvulsant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Seizures, Bipolar Disorder (Anticonvulsant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 269, "label": "Quetiapine", "shape": "dot", "size": 20, "title": "Medicine: Quetiapine"}, {"font": {"color": "white"}, "group": "Condition", "id": 270, "label": "Schizophrenia, Bipolar Disorder (Antipsychotic/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Schizophrenia, Bipolar Disorder (Antipsychotic/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 271, "label": "Clonazepam", "shape": "dot", "size": 20, "title": "Medicine: Clonazepam"}, {"font": {"color": "white"}, "group": "Condition", "id": 272, "label": "Seizures, panic disorder (Benzodiazepine/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Seizures, panic disorder (Benzodiazepine/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 273, "label": "Donepezil", "shape": "dot", "size": 20, "title": "Medicine: Donepezil"}, {"font": {"color": "white"}, "group": "Condition", "id": 274, "label": "Alzheimer\u0027s disease (Cholinesterase Inhibitor/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Alzheimer\u0027s disease (Cholinesterase Inhibitor/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 275, "label": "Latanoprost", "shape": "dot", "size": 20, "title": "Medicine: Latanoprost"}, {"font": {"color": "white"}, "group": "Condition", "id": 276, "label": "Glaucoma (Prostaglandin Analog/Ophthalmic)", "shape": "dot", "size": 30, "title": "Condition: Glaucoma (Prostaglandin Analog/Ophthalmic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 277, "label": "Propranolol", "shape": "dot", "size": 20, "title": "Medicine: Propranolol"}, {"font": {"color": "white"}, "group": "Condition", "id": 278, "label": "High blood pressure, anxiety, migraine prevention (Beta-Blocker/Neurological)", "shape": "dot", "size": 30, "title": "Condition: High blood pressure, anxiety, migraine prevention (Beta-Blocker/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 279, "label": "Ezetimibe", "shape": "dot", "size": 20, "title": "Medicine: Ezetimibe"}, {"font": {"color": "white"}, "group": "Condition", "id": 280, "label": "High cholesterol (Cholesterol Absorption Inhibitor/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High cholesterol (Cholesterol Absorption Inhibitor/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 281, "label": "Topiramate", "shape": "dot", "size": 20, "title": "Medicine: Topiramate"}, {"font": {"color": "white"}, "group": "Condition", "id": 282, "label": "Seizures, migraine prevention (Anticonvulsant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Seizures, migraine prevention (Anticonvulsant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 284, "label": "Atenolol", "shape": "dot", "size": 20, "title": "Medicine: Atenolol"}, {"font": {"color": "white"}, "group": "Condition", "id": 285, "label": "High blood pressure, angina (Beta-Blocker/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High blood pressure, angina (Beta-Blocker/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 286, "label": "Lisdexamfetamine", "shape": "dot", "size": 20, "title": "Medicine: Lisdexamfetamine"}, {"font": {"color": "white"}, "group": "Condition", "id": 287, "label": "ADHD, Binge Eating Disorder (CNS Stimulant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: ADHD, Binge Eating Disorder (CNS Stimulant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 289, "label": "Pregabalin (Lyrica)", "shape": "dot", "size": 20, "title": "Medicine: Pregabalin (Lyrica)"}, {"font": {"color": "white"}, "group": "Condition", "id": 290, "label": "Nerve pain, seizures, fibromyalgia (Neurological)", "shape": "dot", "size": 30, "title": "Condition: Nerve pain, seizures, fibromyalgia (Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 291, "label": "Cephalexin", "shape": "dot", "size": 20, "title": "Medicine: Cephalexin"}, {"font": {"color": "white"}, "group": "Condition", "id": 292, "label": "Bacterial infections (Cephalosporin Antibiotic)", "shape": "dot", "size": 30, "title": "Condition: Bacterial infections (Cephalosporin Antibiotic)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 293, "label": "Baclofen", "shape": "dot", "size": 20, "title": "Medicine: Baclofen"}, {"font": {"color": "white"}, "group": "Medicine", "id": 295, "label": "Rivaroxaban (Xarelto)", "shape": "dot", "size": 20, "title": "Medicine: Rivaroxaban (Xarelto)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 297, "label": "Fenofibrate", "shape": "dot", "size": 20, "title": "Medicine: Fenofibrate"}, {"font": {"color": "white"}, "group": "Condition", "id": 298, "label": "High triglycerides (Fibrate/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High triglycerides (Fibrate/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 299, "label": "Clonidine", "shape": "dot", "size": 20, "title": "Medicine: Clonidine"}, {"font": {"color": "white"}, "group": "Condition", "id": 300, "label": "High blood pressure, ADHD (Alpha-2 Agonist/Cardiovascular/Neurological)", "shape": "dot", "size": 30, "title": "Condition: High blood pressure, ADHD (Alpha-2 Agonist/Cardiovascular/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 301, "label": "Valsartan", "shape": "dot", "size": 20, "title": "Medicine: Valsartan"}, {"font": {"color": "white"}, "group": "Condition", "id": 302, "label": "High blood pressure, heart failure (ARB/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: High blood pressure, heart failure (ARB/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 303, "label": "Dapagliflozin", "shape": "dot", "size": 20, "title": "Medicine: Dapagliflozin"}, {"font": {"color": "white"}, "group": "Condition", "id": 304, "label": "Type 2 Diabetes, heart failure, CKD (SGLT2 Inhibitor/Endocrine)", "shape": "dot", "size": 30, "title": "Condition: Type 2 Diabetes, heart failure, CKD (SGLT2 Inhibitor/Endocrine)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 305, "label": "Aripiprazole (Abilify)", "shape": "dot", "size": 20, "title": "Medicine: Aripiprazole (Abilify)"}, {"font": {"color": "white"}, "group": "Condition", "id": 306, "label": "Schizophrenia, Bipolar Disorder, Depression (Antipsychotic/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Schizophrenia, Bipolar Disorder, Depression (Antipsychotic/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 307, "label": "Oseltamivir (Tamiflu)", "shape": "dot", "size": 20, "title": "Medicine: Oseltamivir (Tamiflu)"}, {"font": {"color": "white"}, "group": "Condition", "id": 308, "label": "Influenza (Flu) treatment and prevention (Antiviral)", "shape": "dot", "size": 30, "title": "Condition: Influenza (Flu) treatment and prevention (Antiviral)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 310, "label": "Aciclovir (Acyclovir)", "shape": "dot", "size": 20, "title": "Medicine: Aciclovir (Acyclovir)"}, {"font": {"color": "white"}, "group": "Condition", "id": 311, "label": "Herpes virus infections (Antiviral)", "shape": "dot", "size": 30, "title": "Condition: Herpes virus infections (Antiviral)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 312, "label": "Digoxin", "shape": "dot", "size": 20, "title": "Medicine: Digoxin"}, {"font": {"color": "white"}, "group": "Condition", "id": 313, "label": "Heart failure, atrial fibrillation (Cardiac Glycoside/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: Heart failure, atrial fibrillation (Cardiac Glycoside/Cardiovascular)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 314, "label": "Esomeprazole", "shape": "dot", "size": 20, "title": "Medicine: Esomeprazole"}, {"font": {"color": "white"}, "group": "Condition", "id": 315, "label": "GERD, ulcers (Proton Pump Inhibitor/Gastrointestinal)", "shape": "dot", "size": 30, "title": "Condition: GERD, ulcers (Proton Pump Inhibitor/Gastrointestinal)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 316, "label": "Levetiracetam (Keppra)", "shape": "dot", "size": 20, "title": "Medicine: Levetiracetam (Keppra)"}, {"font": {"color": "white"}, "group": "Condition", "id": 317, "label": "Seizures (Anticonvulsant/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Seizures (Anticonvulsant/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 318, "label": "Carbidopa/Levodopa", "shape": "dot", "size": 20, "title": "Medicine: Carbidopa/Levodopa"}, {"font": {"color": "white"}, "group": "Condition", "id": 319, "label": "Parkinson\u0027s Disease (Dopamine Agonist/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Parkinson\u0027s Disease (Dopamine Agonist/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 320, "label": "Sumatriptan", "shape": "dot", "size": 20, "title": "Medicine: Sumatriptan"}, {"font": {"color": "white"}, "group": "Condition", "id": 321, "label": "Migraine headaches (Triptan/Neurological)", "shape": "dot", "size": 30, "title": "Condition: Migraine headaches (Triptan/Neurological)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 323, "label": "Sildenafil (Viagra)", "shape": "dot", "size": 20, "title": "Medicine: Sildenafil (Viagra)"}, {"font": {"color": "white"}, "group": "Condition", "id": 324, "label": "Erectile dysfunction, pulmonary hypertension (PDE5 Inhibitor)", "shape": "dot", "size": 30, "title": "Condition: Erectile dysfunction, pulmonary hypertension (PDE5 Inhibitor)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 325, "label": "Diphenhydramine (Benadryl)", "shape": "dot", "size": 20, "title": "Medicine: Diphenhydramine (Benadryl)"}, {"font": {"color": "white"}, "group": "Condition", "id": 326, "label": "Allergies, insomnia (Antihistamine)", "shape": "dot", "size": 30, "title": "Condition: Allergies, insomnia (Antihistamine)"}, {"font": {"color": "white"}, "group": "Medicine", "id": 329, "label": "Nitroglycerin", "shape": "dot", "size": 20, "title": "Medicine: Nitroglycerin"}, {"font": {"color": "white"}, "group": "Condition", "id": 330, "label": "Angina (chest pain) (Vasodilator/Cardiovascular)", "shape": "dot", "size": 30, "title": "Condition: Angina (chest pain) (Vasodilator/Cardiovascular)"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#AAAAAA", "from": 0, "label": "treats", "title": "TREATS", "to": 1, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 2, "label": "treats", "title": "TREATS", "to": 3, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 2, "label": "treats", "title": "TREATS", "to": 193, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 4, "label": "treats", "title": "TREATS", "to": 5, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 4, "label": "treats", "title": "TREATS", "to": 254, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 6, "label": "treats", "title": "TREATS", "to": 7, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 6, "label": "treats", "title": "TREATS", "to": 194, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 8, "label": "treats", "title": "TREATS", "to": 9, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 8, "label": "treats", "title": "TREATS", "to": 309, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 10, "label": "treats", "title": "TREATS", "to": 11, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 10, "label": "treats", "title": "TREATS", "to": 195, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 12, "label": "treats", "title": "TREATS", "to": 13, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 12, "label": "treats", "title": "TREATS", "to": 198, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 14, "label": "treats", "title": "TREATS", "to": 15, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 16, "label": "treats", "title": "TREATS", "to": 17, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 16, "label": "treats", "title": "TREATS", "to": 205, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 18, "label": "treats", "title": "TREATS", "to": 19, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 18, "label": "treats", "title": "TREATS", "to": 200, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 20, "label": "treats", "title": "TREATS", "to": 17, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 20, "label": "treats", "title": "TREATS", "to": 197, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 21, "label": "treats", "title": "TREATS", "to": 22, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 21, "label": "treats", "title": "TREATS", "to": 207, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 23, "label": "treats", "title": "TREATS", "to": 24, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 23, "label": "treats", "title": "TREATS", "to": 207, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 25, "label": "treats", "title": "TREATS", "to": 26, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 27, "label": "treats", "title": "TREATS", "to": 28, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 27, "label": "treats", "title": "TREATS", "to": 266, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 29, "label": "treats", "title": "TREATS", "to": 30, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 31, "label": "treats", "title": "TREATS", "to": 32, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 33, "label": "treats", "title": "TREATS", "to": 34, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 35, "label": "treats", "title": "TREATS", "to": 36, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 37, "label": "treats", "title": "TREATS", "to": 38, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 39, "label": "treats", "title": "TREATS", "to": 38, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 40, "label": "treats", "title": "TREATS", "to": 41, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 40, "label": "treats", "title": "TREATS", "to": 227, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 42, "label": "treats", "title": "TREATS", "to": 5, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 43, "label": "treats", "title": "TREATS", "to": 44, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 43, "label": "treats", "title": "TREATS", "to": 331, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 45, "label": "treats", "title": "TREATS", "to": 46, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 47, "label": "treats", "title": "TREATS", "to": 48, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 49, "label": "treats", "title": "TREATS", "to": 3, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 50, "label": "treats", "title": "TREATS", "to": 51, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 50, "label": "treats", "title": "TREATS", "to": 283, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 52, "label": "treats", "title": "TREATS", "to": 53, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 54, "label": "treats", "title": "TREATS", "to": 55, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 56, "label": "treats", "title": "TREATS", "to": 57, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 56, "label": "treats", "title": "TREATS", "to": 288, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 58, "label": "treats", "title": "TREATS", "to": 59, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 60, "label": "treats", "title": "TREATS", "to": 61, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 62, "label": "treats", "title": "TREATS", "to": 63, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 62, "label": "treats", "title": "TREATS", "to": 322, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 64, "label": "treats", "title": "TREATS", "to": 65, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 66, "label": "treats", "title": "TREATS", "to": 67, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 68, "label": "treats", "title": "TREATS", "to": 69, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 68, "label": "treats", "title": "TREATS", "to": 328, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 70, "label": "treats", "title": "TREATS", "to": 71, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 70, "label": "treats", "title": "TREATS", "to": 196, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 72, "label": "treats", "title": "TREATS", "to": 73, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 72, "label": "treats", "title": "TREATS", "to": 196, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 74, "label": "treats", "title": "TREATS", "to": 71, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 74, "label": "treats", "title": "TREATS", "to": 196, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 75, "label": "treats", "title": "TREATS", "to": 76, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 77, "label": "treats", "title": "TREATS", "to": 17, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 78, "label": "treats", "title": "TREATS", "to": 79, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 78, "label": "treats", "title": "TREATS", "to": 261, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 80, "label": "treats", "title": "TREATS", "to": 81, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 80, "label": "treats", "title": "TREATS", "to": 231, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 82, "label": "treats", "title": "TREATS", "to": 83, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 84, "label": "treats", "title": "TREATS", "to": 85, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 84, "label": "treats", "title": "TREATS", "to": 249, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 86, "label": "treats", "title": "TREATS", "to": 87, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 88, "label": "treats", "title": "TREATS", "to": 89, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 90, "label": "treats", "title": "TREATS", "to": 91, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 92, "label": "treats", "title": "TREATS", "to": 93, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 94, "label": "treats", "title": "TREATS", "to": 95, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 96, "label": "treats", "title": "TREATS", "to": 97, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 98, "label": "treats", "title": "TREATS", "to": 99, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 98, "label": "treats", "title": "TREATS", "to": 210, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 100, "label": "treats", "title": "TREATS", "to": 101, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 100, "label": "treats", "title": "TREATS", "to": 296, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 102, "label": "treats", "title": "TREATS", "to": 103, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 102, "label": "treats", "title": "TREATS", "to": 235, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 104, "label": "treats", "title": "TREATS", "to": 105, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 106, "label": "treats", "title": "TREATS", "to": 107, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 106, "label": "treats", "title": "TREATS", "to": 206, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 108, "label": "treats", "title": "TREATS", "to": 109, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 110, "label": "treats", "title": "TREATS", "to": 111, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 112, "label": "treats", "title": "TREATS", "to": 105, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 113, "label": "treats", "title": "TREATS", "to": 109, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 114, "label": "treats", "title": "TREATS", "to": 115, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 114, "label": "treats", "title": "TREATS", "to": 234, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 116, "label": "treats", "title": "TREATS", "to": 13, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 117, "label": "treats", "title": "TREATS", "to": 118, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 119, "label": "treats", "title": "TREATS", "to": 13, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 119, "label": "treats", "title": "TREATS", "to": 238, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 120, "label": "treats", "title": "TREATS", "to": 38, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 120, "label": "treats", "title": "TREATS", "to": 221, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 121, "label": "treats", "title": "TREATS", "to": 122, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 123, "label": "treats", "title": "TREATS", "to": 124, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 125, "label": "treats", "title": "TREATS", "to": 38, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 126, "label": "treats", "title": "TREATS", "to": 127, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 126, "label": "treats", "title": "TREATS", "to": 199, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 128, "label": "treats", "title": "TREATS", "to": 129, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 130, "label": "treats", "title": "TREATS", "to": 131, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 132, "label": "treats", "title": "TREATS", "to": 131, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 133, "label": "treats", "title": "TREATS", "to": 134, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 135, "label": "treats", "title": "TREATS", "to": 136, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 137, "label": "treats", "title": "TREATS", "to": 134, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 137, "label": "treats", "title": "TREATS", "to": 339, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 138, "label": "treats", "title": "TREATS", "to": 139, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 138, "label": "treats", "title": "TREATS", "to": 334, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 140, "label": "treats", "title": "TREATS", "to": 141, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 142, "label": "treats", "title": "TREATS", "to": 143, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 144, "label": "treats", "title": "TREATS", "to": 145, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 146, "label": "treats", "title": "TREATS", "to": 22, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 147, "label": "treats", "title": "TREATS", "to": 148, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 149, "label": "treats", "title": "TREATS", "to": 150, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 151, "label": "treats", "title": "TREATS", "to": 152, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 153, "label": "treats", "title": "TREATS", "to": 154, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 155, "label": "treats", "title": "TREATS", "to": 156, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 157, "label": "treats", "title": "TREATS", "to": 158, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 157, "label": "treats", "title": "TREATS", "to": 327, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 159, "label": "treats", "title": "TREATS", "to": 160, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 161, "label": "treats", "title": "TREATS", "to": 162, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 163, "label": "treats", "title": "TREATS", "to": 162, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 164, "label": "treats", "title": "TREATS", "to": 162, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 165, "label": "treats", "title": "TREATS", "to": 166, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 167, "label": "treats", "title": "TREATS", "to": 168, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 167, "label": "treats", "title": "TREATS", "to": 240, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 169, "label": "treats", "title": "TREATS", "to": 170, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 171, "label": "treats", "title": "TREATS", "to": 172, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 173, "label": "treats", "title": "TREATS", "to": 174, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 175, "label": "treats", "title": "TREATS", "to": 176, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 175, "label": "treats", "title": "TREATS", "to": 294, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 177, "label": "treats", "title": "TREATS", "to": 178, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 177, "label": "treats", "title": "TREATS", "to": 253, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 179, "label": "treats", "title": "TREATS", "to": 180, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 181, "label": "treats", "title": "TREATS", "to": 182, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 183, "label": "treats", "title": "TREATS", "to": 184, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 183, "label": "treats", "title": "TREATS", "to": 224, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 185, "label": "treats", "title": "TREATS", "to": 186, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 187, "label": "treats", "title": "TREATS", "to": 188, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 189, "label": "treats", "title": "TREATS", "to": 190, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 191, "label": "treats", "title": "TREATS", "to": 192, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 201, "label": "treats", "title": "TREATS", "to": 202, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 203, "label": "treats", "title": "TREATS", "to": 204, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 208, "label": "treats", "title": "TREATS", "to": 209, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 211, "label": "treats", "title": "TREATS", "to": 212, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 213, "label": "treats", "title": "TREATS", "to": 214, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 215, "label": "treats", "title": "TREATS", "to": 216, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 217, "label": "treats", "title": "TREATS", "to": 218, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 219, "label": "treats", "title": "TREATS", "to": 220, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 222, "label": "treats", "title": "TREATS", "to": 223, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 225, "label": "treats", "title": "TREATS", "to": 226, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 228, "label": "treats", "title": "TREATS", "to": 229, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 230, "label": "treats", "title": "TREATS", "to": 231, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 232, "label": "treats", "title": "TREATS", "to": 233, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 236, "label": "treats", "title": "TREATS", "to": 237, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 239, "label": "treats", "title": "TREATS", "to": 202, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 241, "label": "treats", "title": "TREATS", "to": 242, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 243, "label": "treats", "title": "TREATS", "to": 244, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 245, "label": "treats", "title": "TREATS", "to": 246, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 247, "label": "treats", "title": "TREATS", "to": 248, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 250, "label": "treats", "title": "TREATS", "to": 251, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 252, "label": "treats", "title": "TREATS", "to": 210, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 255, "label": "treats", "title": "TREATS", "to": 256, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 257, "label": "treats", "title": "TREATS", "to": 226, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 258, "label": "treats", "title": "TREATS", "to": 212, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 259, "label": "treats", "title": "TREATS", "to": 260, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 262, "label": "treats", "title": "TREATS", "to": 263, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 264, "label": "treats", "title": "TREATS", "to": 265, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 267, "label": "treats", "title": "TREATS", "to": 268, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 269, "label": "treats", "title": "TREATS", "to": 270, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 271, "label": "treats", "title": "TREATS", "to": 272, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 273, "label": "treats", "title": "TREATS", "to": 274, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 275, "label": "treats", "title": "TREATS", "to": 276, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 277, "label": "treats", "title": "TREATS", "to": 278, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 279, "label": "treats", "title": "TREATS", "to": 280, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 281, "label": "treats", "title": "TREATS", "to": 282, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 284, "label": "treats", "title": "TREATS", "to": 285, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 286, "label": "treats", "title": "TREATS", "to": 287, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 289, "label": "treats", "title": "TREATS", "to": 290, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 291, "label": "treats", "title": "TREATS", "to": 292, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 293, "label": "treats", "title": "TREATS", "to": 294, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 295, "label": "treats", "title": "TREATS", "to": 231, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 297, "label": "treats", "title": "TREATS", "to": 298, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 299, "label": "treats", "title": "TREATS", "to": 300, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 301, "label": "treats", "title": "TREATS", "to": 302, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 303, "label": "treats", "title": "TREATS", "to": 304, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 305, "label": "treats", "title": "TREATS", "to": 306, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 307, "label": "treats", "title": "TREATS", "to": 308, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 310, "label": "treats", "title": "TREATS", "to": 311, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 312, "label": "treats", "title": "TREATS", "to": 313, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 314, "label": "treats", "title": "TREATS", "to": 315, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 316, "label": "treats", "title": "TREATS", "to": 317, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 318, "label": "treats", "title": "TREATS", "to": 319, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 320, "label": "treats", "title": "TREATS", "to": 321, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 323, "label": "treats", "title": "TREATS", "to": 324, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 325, "label": "treats", "title": "TREATS", "to": 326, "width": 1.5}, {"arrows": "to", "color": "#AAAAAA", "from": 329, "label": "treats", "title": "TREATS", "to": 330, "width": 1.5}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"physics": {"forceAtlas2Based": {"gravitationalConstant": -100, "centralGravity": 0.01, "springLength": 200, "springConstant": 0.08}, "minVelocity": 0.75, "solver": "forceAtlas2Based"}, "configure": {"enabled": true, "filter": "physics,layout"}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
