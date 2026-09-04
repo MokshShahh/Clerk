@@ -32,14 +32,14 @@ export default function Assistant() {
   const [playableAudioUrl, setPlayableAudioUrl] = useState<string | null>(null); 
 const [processedOutput, setProcessedOutput] = useState<ProcessedOutput | null>(null);
 
-useEffect(() => {
+  useEffect(() => {
     return () => {
       if (audioUrlRef.current) {
         URL.revokeObjectURL(audioUrlRef.current);
         audioUrlRef.current = null;
       }
     };
-  }, [audioBlob]);
+  }, []);
 
 
   const { particleCount, speed } = useMemo(() => {
@@ -86,21 +86,20 @@ const handleStartRecording = useCallback(async () => {
         };
 
         recorder.onstop = () => {
-        const finalBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(finalBlob);
-        const url = URL.createObjectURL(finalBlob);      
-        if(audioUrlRef.current) {
+          const finalBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          if (audioUrlRef.current) {
             URL.revokeObjectURL(audioUrlRef.current);
-        }
-        
-        audioUrlRef.current = url;
-        setPlayableAudioUrl(url);
+          }
+          const url = URL.createObjectURL(finalBlob);
+          audioUrlRef.current = url;
+          setAudioBlob(finalBlob);
+          setPlayableAudioUrl(url);
 
-        stream.getTracks().forEach(track => track.stop()); 
-        audioStreamRef.current = null;
-        uploadAudio(finalBlob); 
-        console.log('Final Audio Blob created. URL ready for playback.');
-    };
+          stream.getTracks().forEach(track => track.stop()); 
+          audioStreamRef.current = null;
+          uploadAudio(finalBlob); 
+          console.log('Final Audio Blob created. URL ready for playback.');
+        };
         
         mediaRecorderRef.current = recorder;
         recorder.start();
@@ -160,7 +159,7 @@ async function uploadAudio(audioFile: Blob){
     if (playableAudioUrl) {
       const a = document.createElement('a');
       a.href = playableAudioUrl;
-      a.download = `clerk-consult.wav`;
+      a.download = `clerk-consult.webm`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -225,8 +224,10 @@ async function uploadAudio(audioFile: Blob){
                     <CardContent className="p-4">
                       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                         <audio 
+                          key={playableAudioUrl}
                           src={playableAudioUrl} 
                           controls 
+                          preload="metadata"
                           className="flex-grow w-full sm:w-auto rounded-lg"
                         />
                         <Button
@@ -306,18 +307,26 @@ async function uploadAudio(audioFile: Blob){
                       <Separator className="bg-gray-800" />
                       <CardContent className="pt-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <div className="space-y-2">
-                            <p className="text-xs text-gray-500 uppercase tracking-wider">Medication</p>
-                            <p className="text-2xl font-bold text-white">
-                              {processedOutput.drug_recommendation.drug_name}
-                            </p>
-                            <Badge variant="secondary" className="bg-gray-800 text-gray-300">
-                              {processedOutput.drug_recommendation.dose_and_frequency}
-                            </Badge>
+                          <div className="space-y-3 min-w-0">
+                            <div>
+                              <p className="text-xs text-gray-500 uppercase tracking-wider">Medication</p>
+                              <p className="text-xl sm:text-2xl font-bold text-white break-words">
+                                {processedOutput.drug_recommendation.drug_name}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1.5">Dosage & Frequency</p>
+                              <Badge 
+                                variant="secondary" 
+                                className="bg-gray-800 text-gray-300 text-xs py-1 px-2.5 whitespace-normal break-words max-w-full text-left leading-relaxed font-normal inline-block"
+                              >
+                                {processedOutput.drug_recommendation.dose_and_frequency}
+                              </Badge>
+                            </div>
                           </div>
-                          <div className="md:col-span-2 space-y-2">
+                          <div className="md:col-span-2 space-y-2 min-w-0">
                             <p className="text-xs text-gray-500 uppercase tracking-wider">Clinical Reasoning</p>
-                            <p className="text-sm text-gray-300 leading-relaxed">
+                            <p className="text-sm text-gray-300 leading-relaxed break-words">
                               {processedOutput.drug_recommendation.reasoning}
                             </p>
                           </div>

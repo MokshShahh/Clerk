@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from io import BytesIO
 from dotenv import load_dotenv
 from agent import Agent
+import json
 
 load_dotenv()
 
@@ -50,6 +51,7 @@ async def process_audio_file(audio_data: bytes):
     draft_notes = f"Chief Complaint: {transcript[:min(len(transcript), 40)]}...\nDiagnosis: Pending.\nPrescription Draft: Amlodipine (PrimeKG check required)."
     print(draft_notes)
     output = Agent(transcript)
+    output = json.loads(output[0]["text"])
     print(output)
     draft_html = f"""
 <article class="bg-slate-800 text-gray-100 rounded-xl shadow-2xl max-w-3xl mx-auto">

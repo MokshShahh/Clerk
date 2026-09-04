@@ -31,5 +31,4 @@ Return only valid JSON. What folows will be the transcript""",
 
     result = agent.invoke({"messages": [{"role": "user", "content": transcript}]})
     print("llm putput")
-    print(result["messages"][-1].content_blocks)
     return result["messages"][-1].content_blocks

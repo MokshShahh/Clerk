@@ -1,4 +1,11 @@
-fastapi
+python-dotenv
+langchain
+langchain-groq
+neo4j
+pandas
+pyvis
+matplotlib
+networkx
 uvicorn
+fastapi
 python-multipart
-assemblyai
